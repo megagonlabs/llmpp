@@ -2,7 +2,7 @@
 
 `LLM Prompt-based Parsing (llmpp)` - A library for fine-tuning and evaluating the LLMs on prompt-based dependency parsing tasks.
 
-This is an implementation of the paper accepted to SyntaxFest 2025:`"Step-by-step Instructions and a Simple Tabular Output Format Improve the Dependency Parsing Accuracy of LLMs."`
+This repository contains implementations for training, inference, and evaluation of thep roposed method in the paper ["Step-by-step Instructions and a Simple Tabular Output Format Improve the Dependency Parsing Accuracy of LLMs."](https://arxiv.org/abs/2506.09983), accepted to SyntaxFest 2025.
 
 ## Environment
 

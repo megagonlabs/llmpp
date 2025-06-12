@@ -1,0 +1,44 @@
+model_args:
+  pretrained_model_name_or_path: "models/Qwen2.5-7B"
+  torch_dtype: "bfloat16"
+  pad_token_id: 151654
+
+tokenizer_args:
+  pretrained_model_name_or_path: null  # defaults to model.model_name_or_path
+  pad_token: "<|vision_pad|>"  # see https://github.com/QwenLM/Qwen/blob/main/tokenization_note_ja.md#%E7%89%B9%E5%88%A5%E3%81%AA%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3
+  chat_template: "{%- if tools %}\n    {{- 'header: system\\n' }}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- messages[0]['content'] }}\n    {%- else %}\n        {{- 'You are a helpful assistant.' }}\n    {%- endif %}\n    {{- \"\\n\\n# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\\n<tool_call>\\n{\\\"name\\\": <function-name>, \\\"arguments\\\": <args-json-object>}\\n</tool_call>\\n\\n\" }}\n{%- else %}\n    {%- if messages[0]['role'] == 'system' %}\n        {{- 'header: system\\n' + messages[0]['content'] + '\\n\\n' }}\n    {%- else %}\n        {{- 'header: system\\nYou are a helpful assistant.\\n\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- for message in messages %}\n    {%- if (message.role == \"user\") or (message.role == \"system\" and not loop.first) or (message.role == \"assistant\" and not message.tool_calls) %}\n        {{- 'header: ' + message.role + '\\n' + message.content + '\\n\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {{- 'header: ' + message.role }}\n        {%- if message.content %}\n            {{- '\\n' + message.content }}\n        {%- endif %}\n        {%- for tool_call in message.tool_calls %}\n            {%- if tool_call.function is defined %}\n                {%- set tool_call = tool_call.function %}\n            {%- endif %}\n            {{- '\\n<tool_call>\\n{\"name\": \"' }}\n            {{- tool_call.name }}\n            {{- '\", \"arguments\": ' }}\n            {{- tool_call.arguments | tojson }}\n            {{- '}\\n</tool_call>' }}\n        {%- endfor %}\n        {{- '<|endoftext|>' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if (loop.index0 == 0) or (messages[loop.index0 - 1].role != \"tool\") %}\n            {{- 'header: user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- message.content }}\n        {{- '\\n</tool_response>' }}\n        {%- if loop.last or (messages[loop.index0 + 1].role != \"tool\") %}\n            {{- '<|endoftext|>' }}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- 'header: assistant\\n' }}\n{%- else %}\n    {{- '<|endoftext|>' }}\n{%- endif %}\n"
+
+collator_args:
+  response_template: "header: assistant\n"
+  instruction_template: "header: user\n"
+  mlm: false
+
+dataset_args:
+  train_jsonl_path: "data/en_ewt-r2.15/en-turn1-step3.train.jsonl"
+  replace_system_role: false
+
+sft_config_args:
+  output_dir: null  # defaults to {model.model_name_or_path}_trl[-lora]_{dataset.train_jsonl_path#stem}
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 8
+  gradient_checkpointing: true
+  num_train_epochs: 3
+  learning_rate: 3.0e-4
+  save_strategy: "no"
+  logging_steps: 0.01
+  # eval_steps: 0.25
+  eval_strategy:  "no"
+  lr_scheduler_type: "cosine_with_min_lr"
+  lr_scheduler_kwargs:
+    min_lr_rate: 0.1
+  bf16: true
+  max_seq_length: 8192
+
+lora_args:
+  use_lora: true
+  target_modules: "all-linear"
+  r: 8
+  lora_dropout: 0.05
+  task_type: "CAUSAL_LM"
+
+chat_template_replace_pattern: null

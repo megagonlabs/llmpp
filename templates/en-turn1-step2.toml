@@ -1,0 +1,41 @@
+name = "en-turn1-step2"
+add_whitespace = "after"
+
+[[message_template]]
+role = "system"
+content = """
+You are <<<LANGUAGE>>> linguist and specialize in <<<LANGUAGE>>> dependency analysis based on Universal Dependencies."""
+
+[[message_template]]
+role = "user"
+content = """
+We will now perform dependency parsing on <<<LANGUAGE>>> sentence.
+After splitting the input sentence into words as shown below, execute following two tasks:
+
+- Task 1
+
+Create a TSV with three fields: word index from 1 to <<<TOKEN_NUM>>> + word + part of speech.
+
+- Task 2
+
+Add two fields to each row of the output of Task 1: the dependent word index + the Universal Dependencies relation label.
+However, for the word that is the main predicate of the sentence, the dependent word index should be 0.
+
+input sentence:
+<<<SENTENCE>>>
+
+words:
+<<<TOKEN_TSV:ORTH>>>
+"""
+
+[[message_template]]
+role = "assistant"
+content = """
+- Task 1
+
+<<<TOKEN_TSV:INDEX_ORTH_UPOS>>>
+
+- Task 2
+
+<<<TOKEN_TSV:INDEX_ORTH_UPOS_HEAD_LABEL>>>
+"""

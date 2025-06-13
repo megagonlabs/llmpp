@@ -1,5 +1,5 @@
 model_args:
-  pretrained_model_name_or_path: "models/gemma-2-9b-it"
+  pretrained_model_name_or_path: "models/gemma-3-12b-it"
   torch_dtype: "bfloat16"
   attn_implementation: "eager"
 
@@ -9,13 +9,13 @@ tokenizer_args:
   padding_side: "right"
 
 collator_args:
-  response_template: "<start_of_turn>model\n"
-  instruction_template: "<start_of_turn>user\n"
+  response_template: [105, 4368, 107]  # "<start_of_turn>model\n"
+  instruction_template: [105, 2364, 107]  # "<start_of_turn>user\n"
   mlm: false
 
 dataset_args:
   train_jsonl_path: "data/en_ewt-r2.15/en-turn1-step3.train.jsonl"
-  replace_system_role: true  # gemma-2 does not support system role
+  replace_system_role: false
 
 sft_config_args:
   output_dir: null  # defaults to {model.model_name_or_path}_trl[-lora]_{dataset.train_jsonl_path#stem}
@@ -23,7 +23,7 @@ sft_config_args:
   gradient_accumulation_steps: 8
   gradient_checkpointing: true
   num_train_epochs: 3
-  learning_rate: 3.0e-4
+  learning_rate: 2.5e-4
   save_strategy: "no"
   logging_steps: 0.01
   # eval_steps: 0.25
@@ -36,10 +36,16 @@ sft_config_args:
 
 lora_args:
   use_lora: true
-  target_modules: "all-linear"
   r: 8
   lora_dropout: 0.05
   task_type: "CAUSAL_LM"
+
+unsloth_args:
+  peft_model_args:
+    finetune_vision_layers: false
+    finetune_language_layers: true
+    finetune_attention_modules: true
+    finetune_mlp_modules: true
 
 chat_template_replace_pattern:
   pattern: "^\\{\\{ bos_token \\}\\}"

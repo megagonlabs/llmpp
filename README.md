@@ -75,6 +75,26 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 accelerate launch \
   --c config/gemma-2-9b.yaml
 ```
 
+### Unsloth
+
+Unsolth can improve training throughput by up to 25%-40%.
+
+See [llmpp/sft_unsloth.py](./llmpp/sft_unsloth.py).
+
+- Create venv_unsloth and install unsloth:
+```bash
+python -m venv venv_unsloth
+source venv_unsloth/bin/activate
+pip install -r requirements_unsloth.txt
+```
+
+- Set the batch size to twice the size for TRL:
+```bash
+source venv_unsloth/bin/activate
+CUDA_VISIBLE_DEVICES=0 python -m llmpp.sft_unsloth --c config/Llama-3.1-8B.yaml --b 4
+CUDA_VISIBLE_DEVICES=1 python -m llmpp.sft_unsloth --c config/Qwen2.5-7B.yaml --b 4
+CUDA_VISIBLE_DEVICES=2 python -m llmpp.sft_unsloth --c config/gemma-2-9b.yaml --b 2
+
 ### OpenAI API Fine-tuning Settings
 
 The standard hyper-parameters are:

@@ -1,0 +1,53 @@
+model_args:
+  pretrained_model_name_or_path: "models/gemma-3-12b-pt"
+  torch_dtype: "bfloat16"
+  attn_implementation: "eager"
+
+tokenizer_args:
+  pretrained_model_name_or_path: null  # defaults to model.model_name_or_path
+  # pad_token: "<pad>"  # should use pad_token defined in the tokenizer
+  padding_side: "right"
+  chat_template: "{{ bos_token }}{% if messages[0]['role'] == 'system' %}{% if messages[0]['content'] is string %}{% set first_user_prefix = messages[0]['content'] + '\n\n' %}{% else %}{% set first_user_prefix = messages[0]['content'][0]['text'] + '\n\n' %}{% endif %}{% set loop_messages = messages[1:] %}{% else %}{% set first_user_prefix = '' %}{% set loop_messages = messages %}{% endif %}{% for message in loop_messages %}{% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}{% endif %}{% if (message['role'] == 'assistant') %}{% set role = 'model' %}{% else %}{% set role = message['role'] %}{% endif %}{{ 'header: ' + role + '\n' + (first_user_prefix if loop.first else '') }}{% if message['content'] is string %}{{ message['content'] }}{% elif message['content'] is iterable %}{% for item in message['content'] %}{% if item['type'] == 'image' %}{{ '<start_of_image>' }}{% elif item['type'] == 'text' %}{{ item['text'] | trim }}{% endif %}{% endfor %}{% else %}{{ raise_exception('Invalid content type') }}{% endif %}{% endfor %}{% if add_generation_prompt %}{{'\nheader: model\n'}}{% else %}{{ eos_token }}{% endif %}"
+
+collator_args:
+  response_template: [5653, 236787, 2028, 107]  # "header: model\n"
+  instruction_template: [5653, 236787, 2430, 107]  # "header: user\n"
+  mlm: false
+
+dataset_args:
+  train_jsonl_path: "data/en_ewt-r2.15/en-turn1-step3.train.jsonl"
+  replace_system_role: false
+
+sft_config_args:
+  output_dir: null  # defaults to {model.model_name_or_path}_trl[-lora]_{dataset.train_jsonl_path#stem}
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  gradient_checkpointing: true
+  num_train_epochs: 3
+  learning_rate: 2.0e-4
+  save_strategy: "no"
+  logging_steps: 0.01
+  # eval_steps: 0.25
+  eval_strategy:  "no"
+  lr_scheduler_type: "cosine_with_min_lr"
+  lr_scheduler_kwargs:
+    min_lr_rate: 0.1
+  bf16: true
+  max_seq_length: 8192
+
+lora_args:
+  use_lora: true
+  r: 8
+  lora_dropout: 0.05
+  task_type: "CAUSAL_LM"
+
+unsloth_args:
+  peft_model_args:
+    finetune_vision_layers: false
+    finetune_language_layers: true
+    finetune_attention_modules: true
+    finetune_mlp_modules: true
+
+chat_template_replace_pattern:
+  pattern: "^\\{\\{ bos_token \\}\\}"
+  repl: ""

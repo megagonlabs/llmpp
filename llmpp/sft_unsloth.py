@@ -10,7 +10,7 @@ def prepare_model(
     tokenizer_args: dict,
     sft_config_args: dict,
     lora_args: dict,
-    unsloth_args: dict,
+    unsloth_args: dict = {},
     **kwargs,
 ):
     assert not tokenizer_args.get("pretrained_model_name_or_path"), "unsloth does not support external tokenizer"

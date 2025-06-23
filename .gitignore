@@ -170,18 +170,18 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-/models/
 *.log
 log*
 _old/
 *bccwj*
-/data/ctb*
-/data/ptb*
+ctb*
+ptb*
 tmp*
 
-/*.py
-datasets/
-ptb/
-ctb/
-EVALB/
 /.python-version
+/*.py
+/data/
+/datasets/
+/models/
+/EVALB/
+/RL*/

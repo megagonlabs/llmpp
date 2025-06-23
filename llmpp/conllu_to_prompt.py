@@ -59,13 +59,13 @@ def main():
                         "ORTHWS": f["orth_with_whitespace"],
                         "UPOS": f["upos"],
                         "XPOS": f["xpos"],
-                        "POS": f[pos],
                         "HEAD": 0 if f["label"] == "root" else f["head"] + 1,
                         "HEADORTH": "ROOT" if f["label"] == "root" else s["tokens"][f["head"]]["orth"],
                         "LABEL": f["label"],
                         "CHILDREN": [],
                     } for f in s["tokens"]
                 ]
+                tokens["POS"] = tokens[pos]
                 root = None
                 for t in tokens:
                     if t["HEAD"] > 0:
@@ -82,8 +82,8 @@ def main():
                         else:
                             r += " " + traverse(t, f)
                     return f(token, l, r)
-                linearized_deprel = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}({t[pos]} {t['ORTH']}){r}{space_between_rrb})")
-                linearized_pos = " ".join(f'({t[pos]} {t["ORTH"]})' for t in tokens)
+                linearized_deprel = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}({t["POS"]} {t['ORTH']}){r}{space_between_rrb})")
+                linearized_pos = " ".join(f'({t["POS"]} {t["ORTH"]})' for t in tokens)
 
                 masked_token_indexes = set()
                 while len(masked_token_indexes) < len(tokens) * mask_rate:

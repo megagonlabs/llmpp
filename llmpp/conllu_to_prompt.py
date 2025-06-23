@@ -59,6 +59,7 @@ def main():
                         "ORTHWS": f["orth_with_whitespace"],
                         "UPOS": f["upos"],
                         "XPOS": f["xpos"],
+                        "POS": f[pos],
                         "HEAD": 0 if f["label"] == "root" else f["head"] + 1,
                         "HEADORTH": "ROOT" if f["label"] == "root" else s["tokens"][f["head"]]["orth"],
                         "LABEL": f["label"],

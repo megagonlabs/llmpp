@@ -5,6 +5,8 @@ from transformers import AutoTokenizer
 
 from .utils import create_system_role_replaced_tempfiles
 
+LOCAL_TOP_N = 10
+
 
 def main():
     model_path = sys.argv[1]
@@ -19,7 +21,7 @@ def main():
     total_max_path = None
     for jsonl_path in jsonl_path_list:
         try:
-            local_max = -1
+            local_max = []
             if replace_system_role:
                 input_path = create_system_role_replaced_tempfiles(jsonl_path)
             else:
@@ -29,12 +31,11 @@ def main():
                     prompt = json.loads(_)
                     messages = prompt["messages"]
                     length = len(tokenizer.apply_chat_template(messages, tokenize=True))
-                    if local_max < length:
-                        local_max = length
+                    local_max = sorted(local_max + [length], reverse=True)[:LOCAL_TOP_N]
                     if total_max < length:
                         total_max = length
                         total_max_path = jsonl_path
-            print(local_max, jsonl_path, sep="\t")
+            print(*local_max, jsonl_path, sep="\t")
         except Exception as e:
             print("#ERR#", jsonl_path, e, sep="\t")
     print(total_max, f"total: {total_max_path}", sep="\t")

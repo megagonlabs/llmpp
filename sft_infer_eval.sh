@@ -1,9 +1,9 @@
 #!/bin/bash
 
-model=$1
-template=$2
-datasets=${@:3:($#-2)}
-sft_method=llmpp.sft_unsloth
+sft_method=llmpp.sft_$1
+model=$2
+template=$3
+datasets=${@:4:($#-3)}
 
 for dataset in ${datasets}
 do

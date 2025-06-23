@@ -4,7 +4,7 @@ import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-from .utils import constituent_tree, recover_bracketing, recover_word, yield_constituent_units
+from .utils import constituent_tree, recover_bracketing, recover_word, select_last_bracketing_line, yield_constituent_units
 
 
 def add_args(parser: ArgumentParser = None) -> ArgumentParser:
@@ -60,8 +60,16 @@ def bracket_to_table(bracket_jsonl_path: str, table_jsonl_path: str = None, appl
         for line in fin.readlines():
             prompt = json.loads(line)
             result = prompt["messages"][-1]
-            pred_text = blacket_terminal_mapping(result["content"].strip()).replace(" deleteById", "")
-            gold_text = blacket_terminal_mapping(result["gold"].strip()) if "gold" in result else None
+            pred_text = blacket_terminal_mapping(
+                select_last_bracketing_line(
+                    result["content"].strip()
+                )
+            ).replace(" deleteById", "")
+            gold_text = blacket_terminal_mapping(
+                select_last_bracketing_line(
+                    result["gold"].strip()
+                )
+            ) if "gold" in result else None
             if apply_recovery:
                 pred_text = recover_bracketing(pred_text)
                 if gold_text:
@@ -90,8 +98,8 @@ def bracket_to_table(bracket_jsonl_path: str, table_jsonl_path: str = None, appl
 def main():
     args = add_args().parse_args()
     for prompt_jsonl_path in args.completion_results_jsonl_files:
-        table_jsonl_path = bracket_to_table(prompt_jsonl_path, args.apply_recovery)
-        print(f"converted: {prompt_jsonl_path} => {table_jsonl_path}", file=sys.stderr)
+        table_jsonl_path = bracket_to_table(prompt_jsonl_path, apply_recovery=args.apply_recovery)
+        print(f"bracketed: {prompt_jsonl_path}\n => table: {table_jsonl_path}", file=sys.stderr)
 
 
 if __name__ == '__main__':

@@ -27,7 +27,7 @@ REPORTING_FIELDS = {
 def main():
     args = parse_args()
     for completion_results_jsonl in args.completion_results_jsonl_files:
-        print(f"processing {completion_results_jsonl} ...")
+        print(completion_results_jsonl)
         try:
             base_path = Path(completion_results_jsonl)
             output_eval_json_path = f"{base_path.parent}/{base_path.stem}.eval.json"
@@ -66,6 +66,7 @@ def main():
         except Exception as e:
             print(e, file=sys.stderr)
             print("skipping", completion_results_jsonl)
+        print()
 
 
 def is_punctuation(pos):

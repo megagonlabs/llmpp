@@ -24,13 +24,14 @@ def get_config(parser: ArgumentParser = None):
     parser.add_argument("--dev_jsonl_path", "--d")
     parser.add_argument("--output_dir", "--o")
     parser.add_argument("--per_device_train_batch_size", "--b", type=int)
-    parser.add_argument("--gradient_accumulation_steps", "--a", type=int)
+    parser.add_argument("--gradient_accumulation_steps", "--ga", type=int)
     parser.add_argument("--max_seq_length", "--l", type=int)
     parser.add_argument("--num_train_epochs", "--e", type=int)
     parser.add_argument("--learning_rate", "--lr", type=float)
     parser.add_argument("--load_in_4bit", "--li4", action="store_true")
     parser.add_argument("--load_in_8bit", "--li8", action="store_true")
     parser.add_argument("--lora_r", "--r", type=int)
+    parser.add_argument("--lora_alpha", "--a", type=int)
     parser.add_argument("--save_merged", "--sm", action="store_true")
     args = parser.parse_args()
     with open(args.config, "r", encoding="utf8") as fin:
@@ -70,6 +71,8 @@ def get_config(parser: ArgumentParser = None):
         model_name = config["model_args"]["pretrained_model_name_or_path"].rstrip("/").split("/")[-1]
         if args.lora_r:
             model_name += f"-r{args.lora_r}"
+        if args.lora_alpha:
+            model_name += f"-a{args.lora_alpha}"
         if args.learning_rate:
             model_name += f"-lr{args.learning_rate}"
         if args.num_train_epochs:

@@ -28,6 +28,7 @@ def main():
     replacements = [args.replacements[_:_ + 2] for _ in range(0, len(args.replacements), 2)]
     if args.language:
         replacements.append(["LANGUAGE", args.language])
+    name_suffix = f"-{args.name_suffix}" if args.name_suffix else ""
     pos = args.pos
 
     for template_toml in args.template_toml_list:
@@ -44,7 +45,7 @@ def main():
 
         for input_conllu in args.input_conllu_list:
             input_path = Path(input_conllu)
-            output_jsonl_path = f"{input_path.parent}/{template_name}{args.name_suffix}.{input_path.stem.split('-')[-1]}.jsonl"
+            output_jsonl_path = f"{input_path.parent}/{template_name}{name_suffix}.{input_path.stem.split('-')[-1]}.jsonl"
 
             with open(input_conllu, "r", encoding="utf8") as fin:
                 conllu_lines = fin.readlines()

@@ -1,0 +1,39 @@
+space_between_rrb = ""
+
+[[message_template]]
+role = "system"
+content = """
+You are a linguist and specialize in dependency parsing based on Universal Dependencies."""
+
+[[message_template]]
+role = "user"
+content = """
+We will now perform dependency parsing on <<<LANGUAGE>>> sentence.
+The input sentence and its words are as below.
+
+input sentence:
+<<<SENTENCE>>>
+
+words:
+<<<TOKEN_TSV:ORTH>>>
+
+- Task 1
+
+Output the word + part of speech pairs of the input sentence as the bracketed representation.
+
+- Task 2
+
+Output the parse tree as the bracketed representation while referring to the output of Task 1.
+"""
+
+[[message_template]]
+role = "assistant"
+content = """
+- Task 1
+
+<<<LINEARIZED_POS>>>
+
+- Task 2
+
+<<<LINEARIZED_DEPREL>>>
+"""

@@ -1,10 +1,9 @@
-name = "en-turn1-step2"
 add_whitespace = "after"
 
 [[message_template]]
 role = "system"
 content = """
-You are <<<LANGUAGE>>> linguist and specialize in <<<LANGUAGE>>> dependency analysis based on Universal Dependencies."""
+You are a linguist and specialize in dependency parsing based on Universal Dependencies."""
 
 [[message_template]]
 role = "user"
@@ -25,7 +24,7 @@ input sentence:
 <<<SENTENCE>>>
 
 words:
-<<<TOKEN_TSV:ORTH>>>
+<<<TOKEN_TSV:ORTHWS>>>
 """
 
 [[message_template]]
@@ -33,9 +32,9 @@ role = "assistant"
 content = """
 - Task 1
 
-<<<TOKEN_TSV:INDEX_ORTH_UPOS>>>
+<<<TOKEN_TSV:INDEX_ORTHWS_POS>>>
 
 - Task 2
 
-<<<TOKEN_TSV:INDEX_ORTH_UPOS_HEAD_LABEL>>>
+<<<TOKEN_TSV:INDEX_ORTHWS_POS_HEAD_LABEL>>>
 """

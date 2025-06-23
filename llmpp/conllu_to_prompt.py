@@ -1,151 +1,148 @@
 import json
 import random
 import re
-import sys
 import tomllib
+from argparse import ArgumentParser
 from copy import deepcopy
 from pathlib import Path
 
 
-def print_usage():
-    print("""
-Usage:
-
-    python -m llmpp.conllu_to_prompt {template_toml} {input_conllu} [LANGUAGE {target_language} ...]
-
-    {template_toml} is the template file used to apply.
-    {input_conllu} is the source file to convert to jsonl.
-    {target_language} is used as the value of the template field '<<<LANGUAGE>>>'.
-    The output file will be created in the same directory of {input_conllu}.
-    The output file format is designed for OpenAI Completion API.
-
-The template fields, such like '<<<TOKEN_TSV:INDEX_ORTH_UPOS>>>', defined in the value of MESSAGE_TEMPLATE variable would be replaced with appropriate values in this script.
-""")
+def add_args(parser: ArgumentParser = None) -> ArgumentParser:
+    parser = parser or ArgumentParser()
+    parser.add_argument("--template_toml_list", "--t", nargs="+")
+    parser.add_argument("--input_conllu_list", "--i", nargs="+")
+    parser.add_argument("--language", "--l")
+    parser.add_argument("--name_suffix", "--s")
+    parser.add_argument("--pos", choices=["UPOS", "XPOS"], default="UPOS")
+    parser.add_argument("--add_whitespace", "--a", choices=["after", "before", False, None], default=None)
+    parser.add_argument("--space_between_rrb", "--r")
+    parser.add_argument("--mask_rate", "--m", type=float, default=None)
+    parser.add_argument("--prefill_rate", "--p", type=float, default=None)
+    parser.add_argument("replacements", nargs="*")
+    return parser
 
 
 def main():
-    if len(sys.argv) < 4:
-        print_usage()
-        sys.exit(1)
-    template_toml = sys.argv[1]
-    input_conllu = sys.argv[2]
-    replacements = [sys.argv[_:_ + 2] for _ in range(3, len(sys.argv), 2)]
+    args = add_args().parse_args()
     random.seed(42)
-    with open(template_toml, "rb") as fin:
-        template = tomllib.load(fin)
-    template_name = template["name"]
-    message_template = template["message_template"]
-    add_whitespace = template.get("add_whitespace", "none")
-    mask_rate = template.get("mask_rate", 0.)
-    prefill_rate = template.get("prefill_rate", 0.)
-    prefill_fields = template.get("prefill_fields", [])
-    input_path = Path(input_conllu)
-    output_jsonl_path = f"{input_path.parent}/{template_name}.{input_path.stem.split('-')[-1]}.jsonl"
+    replacements = [args.replacements[_:_ + 2] for _ in range(0, len(args.replacements), 2)]
+    if args.language:
+        replacements.append(["LANGUAGE", args.language])
+    pos = args.pos
 
-    with open(input_conllu, "r", encoding="utf8") as fin:
-        conllu_lines = fin.readlines()
+    for template_toml in args.template_toml_list:
+        template_path = Path(template_toml)
+        with open(template_path, "rb") as fin:
+            template = tomllib.load(fin)
+        template_name = template_path.stem
+        message_template = template["message_template"]
+        add_whitespace = template.get("add_whitespace", "after") if args.add_whitespace is None else args.add_whitespace
+        space_between_rrb = args.space_between_rrb or template.get("space_between_rrb", "")
+        mask_rate = template.get("mask_rate", 0.) if args.mask_rate is None else args.mask_rate
+        prefill_rate = template.get("prefill_rate", 0.) if args.prefill_rate is None else args.prefill_rate
+        prefill_fields = template.get("prefill_fields", [])
 
-    outputs = []
-    for s in convert_lines(conllu_lines, add_whitespace):
-        tokens = [
-            {
-                "INDEX": f["id"] + 1,
-                "ORTH": f["orth"],
-                "UPOS": f["upos"],
-                "XPOS": f["xpos"],
-                "HEAD": 0 if f["label"] == "root" else f["head"] + 1,
-                "HEADORTH": "ROOT" if f["label"] == "root" else s["tokens"][f["head"]]["orth"],
-                "LABEL": f["label"],
-                "CHILDREN": [],
-            } for f in s["tokens"]
-        ]
-        root = None
-        for t in tokens:
-            if t["HEAD"] > 0:
-                t["HEAD_TOKEN"] = tokens[t["HEAD"] - 1]
-                t["HEAD_TOKEN"]["CHILDREN"].append(t)
-            else:
-                root = t
-        def traverse(token, f=lambda t, l, r: f"({t['LABEL']} {l}{t['ORTH']}{r})") -> str:
-            l = ""
-            r = ""
-            for t in token["CHILDREN"]:
-                if t["INDEX"] < token["INDEX"]:
-                    l += traverse(t, f) + " "
-                else:
-                    r += " " + traverse(t, f)
-            return f(token, l, r)
-        linearized_upos_orth = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}({t['UPOS']} {t['ORTH']}){r})")
-        linearized_xpos_orth = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}({t['XPOS']} {t['ORTH']}){r})")
-        linearized_upos_orth_space_after = re.sub(r"(\))(?=\))", ") ", linearized_upos_orth)
-        linearized_xpos_orth_space_after = re.sub(r"(\))(?=\))", ") ", linearized_xpos_orth)
-        linearized_upos = " ".join(f'({t["UPOS"]} {t["ORTH"]})' for t in tokens)
-        linearized_xpos = " ".join(f'({t["XPOS"]} {t["ORTH"]})' for t in tokens)
+        for input_conllu in args.input_conllu_list:
+            input_path = Path(input_conllu)
+            output_jsonl_path = f"{input_path.parent}/{template_name}{args.name_suffix}.{input_path.stem.split('-')[-1]}.jsonl"
 
-        masked_token_indexes = set()
-        while len(masked_token_indexes) < len(tokens) * mask_rate:
-            masked_token_indexes.add(random.randrange(len(tokens)))
-        if mask_rate > 0. and not masked_token_indexes:
-            masked_token_indexes.add(random.randrange(len(tokens)))
-        masked_token_indexes = sorted(masked_token_indexes)
-        masked_tokens = deepcopy(tokens)
-        for _ in masked_token_indexes:
-            masked_tokens[_] = {k: masked_tokens[_][k] for k in ["INDEX", "ORTH"]}
+            with open(input_conllu, "r", encoding="utf8") as fin:
+                conllu_lines = fin.readlines()
 
-        prefilled_token_indexes = []
-        for i in range(len(tokens)):
-            if random.random() < prefill_rate:
-                prefilled_token_indexes.append(i)
-
-        messages = deepcopy(message_template)
-        def make_tsv(records, fields, prefilled_token_indexes, prefill_fields):
-            return "\n".join(
-                "\t".join(
-                    str(r[f]) for f in prefill_fields if f in r
-                ) if  _ in prefilled_token_indexes else "\t".join(
-                    str(r[f]) for f in fields if f in r
-                ) for _, r in enumerate(records)
-            )
-        for m in messages:
-            for key in m.keys():
-                origin = m[key]
-                result = ""
-                prev = 0
-                for match in re.finditer(r"<<<([^>:]+)>>>|<<<([^>:]+):([^>]*)>>>", m[key]):
-                    for meta_name, target in [
-                        ["SENTENCE", s["sentence"]],
-                        ["TOKEN_NUM", len(s["tokens"])],
-                        ["TOKEN_TSV", tokens],
-                        ["MASKED_TOKEN_INDEXES", ", ".join(str(_ + 1) for _ in masked_token_indexes)],
-                        ["MASKED_TOKEN_TSV", masked_tokens],
-                        ["PREFILLED_TOKEN_INDEXES", ", ".join(str(_ + 1) for _ in prefilled_token_indexes)],
-                        ["LINEARIZED_UPOS", linearized_upos],
-                        ["LINEARIZED_XPOS", linearized_xpos],
-                        ["LINEARIZED_UPOS_ORTH", linearized_upos_orth],
-                        ["LINEARIZED_XPOS_ORTH", linearized_xpos_orth],
-                        ["LINEARIZED_UPOS_ORTH_SPACE_AFTER", linearized_upos_orth_space_after],
-                        ["LINEARIZED_XPOS_ORTH_SPACE_AFTER", linearized_xpos_orth_space_after],
-                    ] + replacements:
-                        if meta_name == match.group(1):
-                            result += origin[prev:match.start()]
-                            result += str(target)
-                            prev = match.end()
-                            break
-                        if meta_name == match.group(2):
-                            fields = match.group(3).split("_")
-                            result += origin[prev:match.start()]
-                            result += make_tsv(target, fields, prefilled_token_indexes, prefill_fields)
-                            prev = match.end()
-                            break
+            outputs = []
+            for s in convert_lines(conllu_lines, add_whitespace):
+                tokens = [
+                    {
+                        "INDEX": f["id"] + 1,
+                        "ORTH": f["orth"],
+                        "ORTHWS": f["orth_with_whitespace"],
+                        "UPOS": f["upos"],
+                        "XPOS": f["xpos"],
+                        "HEAD": 0 if f["label"] == "root" else f["head"] + 1,
+                        "HEADORTH": "ROOT" if f["label"] == "root" else s["tokens"][f["head"]]["orth"],
+                        "LABEL": f["label"],
+                        "CHILDREN": [],
+                    } for f in s["tokens"]
+                ]
+                root = None
+                for t in tokens:
+                    if t["HEAD"] > 0:
+                        t["HEAD_TOKEN"] = tokens[t["HEAD"] - 1]
+                        t["HEAD_TOKEN"]["CHILDREN"].append(t)
                     else:
-                        assert False, f"meta field not replaced: {match.group(0)}"
-                m[key] = result + m[key][prev:]
-        outputs.append(messages)
+                        root = t
+                def traverse(token, f) -> str:
+                    l = ""
+                    r = ""
+                    for t in token["CHILDREN"]:
+                        if t["INDEX"] < token["INDEX"]:
+                            l += traverse(t, f) + " "
+                        else:
+                            r += " " + traverse(t, f)
+                    return f(token, l, r)
+                linearized_deprel = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}({t[pos]} {t['ORTH']}){r}{space_between_rrb})")
+                linearized_pos = " ".join(f'({t[pos]} {t["ORTH"]})' for t in tokens)
 
-    with open(output_jsonl_path, "w", encoding="utf8") as fout:
-        for messages in outputs:
-            json.dump({"messages": messages}, fout, ensure_ascii=False)
-            print(file=fout)
+                masked_token_indexes = set()
+                while len(masked_token_indexes) < len(tokens) * mask_rate:
+                    masked_token_indexes.add(random.randrange(len(tokens)))
+                if mask_rate > 0. and not masked_token_indexes:
+                    masked_token_indexes.add(random.randrange(len(tokens)))
+                masked_token_indexes = sorted(masked_token_indexes)
+                masked_tokens = deepcopy(tokens)
+                for _ in masked_token_indexes:
+                    masked_tokens[_] = {k: masked_tokens[_][k] for k in ["INDEX", "ORTHWS"]}
+
+                prefilled_token_indexes = []
+                for i in range(len(tokens)):
+                    if random.random() < prefill_rate:
+                        prefilled_token_indexes.append(i)
+
+                messages = deepcopy(message_template)
+                def make_tsv(records, fields, prefilled_token_indexes, prefill_fields):
+                    return "\n".join(
+                        "\t".join(
+                            str(r[f]) for f in prefill_fields if f in r
+                        ) if  _ in prefilled_token_indexes else "\t".join(
+                            str(r[f]) for f in fields if f in r
+                        ) for _, r in enumerate(records)
+                    )
+                for m in messages:
+                    for key in m.keys():
+                        origin = m[key]
+                        result = ""
+                        prev = 0
+                        for match in re.finditer(r"<<<([^>:]+)>>>|<<<([^>:]+):([^>]*)>>>", m[key]):
+                            for meta_name, target in [
+                                ["SENTENCE", s["sentence"]],
+                                ["TOKEN_NUM", len(s["tokens"])],
+                                ["TOKEN_TSV", tokens],
+                                ["MASKED_TOKEN_INDEXES", ", ".join(str(_ + 1) for _ in masked_token_indexes)],
+                                ["MASKED_TOKEN_TSV", masked_tokens],
+                                ["PREFILLED_TOKEN_INDEXES", ", ".join(str(_ + 1) for _ in prefilled_token_indexes)],
+                                ["LINEARIZED_POS", linearized_pos],
+                                ["LINEARIZED_DEPREL", linearized_deprel],
+                            ] + replacements:
+                                if meta_name == match.group(1):
+                                    result += origin[prev:match.start()]
+                                    result += str(target)
+                                    prev = match.end()
+                                    break
+                                if meta_name == match.group(2):
+                                    fields = match.group(3).split("_")
+                                    result += origin[prev:match.start()]
+                                    result += make_tsv(target, fields, prefilled_token_indexes, prefill_fields)
+                                    prev = match.end()
+                                    break
+                            else:
+                                assert False, f"meta field not replaced: {match.group(0)}"
+                        m[key] = result + m[key][prev:]
+                outputs.append(messages)
+
+            with open(output_jsonl_path, "w", encoding="utf8") as fout:
+                for messages in outputs:
+                    json.dump({"messages": messages}, fout, ensure_ascii=False)
+                    print(file=fout)
 
 
 CONLLU_TEXT_PATTERN = re.compile(
@@ -210,15 +207,17 @@ def convert_lines(lines, add_whitespace):
                     bunsetu_id += 1
                     bunsetu = []
 
-            assert add_whitespace in ["after", "before", "none"]
+            assert add_whitespace in ["after", "before", False]
             if add_whitespace == "after" and whitespace:
-                orth = f"{orth} "
+                orth_with_whitespace = f"{orth} "
             elif add_whitespace == "before" and prev_whitespace:
-                orth = f" {orth}"
+                orth_with_whitespace = f" {orth}"
+            else:
+                orth_with_whitespace = orth
             token = {
                 "id": token_id,
                 "orth": orth,
-                "orth_with_whitespace": f"{orth} " if whitespace else orth,
+                "orth_with_whitespace": orth_with_whitespace,
                 "upos": upos,
                 "xpos": xpos,
                 "label": label,
@@ -231,6 +230,9 @@ def convert_lines(lines, add_whitespace):
             prev_whitespace = whitespace
 
         elif state == "token" and line == "":
+            if tokens[-1]["whitespace"]:
+                tokens[-1]["whitespace"] = False
+                tokens[-1]["orth_with_whitespace"] = tokens[-1]["orth_with_whitespace"][:-1]
             if bunsetu:
                 bunsetu_list.append(
                     (

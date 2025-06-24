@@ -29,10 +29,16 @@ PTB_TOKEN_MAPPING = {
 }
 
 
-EVALB_TOKEN_MAPPING = {
+BRACKET_ESCAPE_MAPPING = {
     "(": "-LRB-",
     ")": "-RRB-"
 }
+
+
+def escape_brackets(target: str) -> str:
+    for c, r in BRACKET_ESCAPE_MAPPING.items():
+        target = target.replace(c, r)
+    return target
 
 
 def create_logger(logger_name=DEFAULT_LOGGER_NAME, log_file_path=None, is_dummy=False):

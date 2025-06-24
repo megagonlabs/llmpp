@@ -6,6 +6,8 @@ from argparse import ArgumentParser
 from copy import deepcopy
 from pathlib import Path
 
+from .utils import escape_brackets
+
 
 def add_args(parser: ArgumentParser = None) -> ArgumentParser:
     parser = parser or ArgumentParser()
@@ -39,6 +41,7 @@ def main():
         message_template = template["message_template"]
         add_whitespace = template.get("add_whitespace", "after") if args.add_whitespace is None else args.add_whitespace
         space_between_rrb = args.space_between_rrb or template.get("space_between_rrb", "")
+        escape_bracket = template.get("escape_bracket")
         mask_rate = template.get("mask_rate", 0.) if args.mask_rate is None else args.mask_rate
         prefill_rate = template.get("prefill_rate", 0.) if args.prefill_rate is None else args.prefill_rate
         prefill_fields = template.get("prefill_fields", [])
@@ -51,7 +54,7 @@ def main():
                 conllu_lines = fin.readlines()
 
             outputs = []
-            for s in convert_lines(conllu_lines, add_whitespace):
+            for s in convert_lines(conllu_lines, add_whitespace, escape_bracket):
                 tokens = [
                     {
                         "INDEX": f["id"] + 1,
@@ -159,7 +162,7 @@ CONLLU_TOKEN_SKIP_PATTERN = re.compile(
 CONLLU_BUNSETU_PATTERN = re.compile(r"BunsetuBILabel=(.)")
 
 
-def convert_lines(lines, add_whitespace):
+def convert_lines(lines, add_whitespace, escape_bracket):
     sentences = []
     tokens = []
     bunsetu = []
@@ -176,6 +179,8 @@ def convert_lines(lines, add_whitespace):
             if m is None:
                 continue
             sentence = m.group(1)
+            if escape_bracket:
+                sentence = escape_brackets(sentence)
             state = "token"
             prev_whitespace = False
 
@@ -188,6 +193,8 @@ def convert_lines(lines, add_whitespace):
 
             token_id = int(m.group(1)) - 1
             orth = m.group(2)
+            if escape_bracket:
+                orth = escape_brackets(orth)
             upos = m.group(4)
             xpos = m.group(5)
             head_id = int(m.group(7)) - 1

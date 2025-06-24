@@ -1,4 +1,5 @@
 space_between_rrb = ""
+escape_bracket = true
 
 [[message_template]]
 role = "system"

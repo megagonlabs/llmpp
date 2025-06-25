@@ -71,8 +71,10 @@ def bracket_to_table(bracket_jsonl_path: str, table_jsonl_path: str = None, appl
                 )
             ) if "gold" in result else None
             if apply_recovery:
+                pred_text = re.sub(r"\) +", ")", pred_text)
                 pred_text = recover_bracketing(pred_text)
                 if gold_text:
+                    gold_text = re.sub(r"\) +", ")", gold_text)
                     pred_text = recover_word(gold_text.strip(), pred_text)
             try:
                 pred_table = flatten_tree(constituent_tree(list(yield_constituent_units(pred_text)))[1])

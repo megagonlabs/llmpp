@@ -294,6 +294,7 @@ def parse_records(content: str, index_field: int) -> list[dict]:
         return []
     form_field = 1 - index_field
     f2_isdigit = rows[0][2].isdigit()
+    f4_isdigit = rows[0][4].isdigit() if len(rows[0]) > 4 else False
     records = []
     for r in rows:
         try:
@@ -307,7 +308,9 @@ def parse_records(content: str, index_field: int) -> list[dict]:
                     records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "upos": r[2], "head": int(r[3]), "deprel": r[4]})
             elif field_num == 6:
                 if f2_isdigit:
-                    records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "upos": r[5], "head": int(r[2]), "deprel": r[4]})
+                    records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "head": int(r[2]), "deprel": r[4], "upos": r[5]})
+                elif f4_isdigit:
+                    records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "upos": r[2], "head": int(r[4]), "deprel": r[5]})
                 else:
                     records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "upos": r[2], "head": int(r[3]), "deprel": r[5]})
         except Exception:

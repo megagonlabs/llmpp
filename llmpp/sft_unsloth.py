@@ -44,7 +44,7 @@ def run_sft(
             target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
         model = FastLanguageModel.get_peft_model(
             model,
-            r = lora_args.get("r", 16),
+            r = lora_args.get("r", 8),
             target_modules=target_modules,
             lora_alpha = lora_args.get("alpha", 8), # 16
             lora_dropout = lora_args.get("lora_dropout", 0), # Supports any, but = 0 is optimized

@@ -32,6 +32,7 @@ def get_config(parser: ArgumentParser = None):
     parser.add_argument("--load_in_8bit", "--li8", action="store_true")
     parser.add_argument("--lora_r", "--r", type=int)
     parser.add_argument("--lora_alpha", "--a", type=int)
+    parser.add_argument("--lora_all_linear_with_lm_head", "--lmh", action="store_true")
     parser.add_argument("--save_merged", "--sm", action="store_true")
     args = parser.parse_args()
     with open(args.config, "r", encoding="utf8") as fin:
@@ -65,6 +66,8 @@ def get_config(parser: ArgumentParser = None):
         config["lora_args"]["r"] = args.lora_r
         if "lora_alpha" not in config["lora_args"]:
             config["lora_args"]["lora_alpha"] = args.lora_r
+    if args.lora_all_linear_with_lm_head:
+        config["lora_args"]["target_modules"] = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj", "lm_head"]
     config["save_merged"] = args.save_merged
 
     if not config["sft_config_args"]["output_dir"]:
@@ -73,6 +76,8 @@ def get_config(parser: ArgumentParser = None):
             model_name += f"-r{args.lora_r}"
         if args.lora_alpha:
             model_name += f"-a{args.lora_alpha}"
+        if args.lora_all_linear_with_lm_head:
+            model_name += "-lmh"
         if args.learning_rate:
             model_name += f"-lr{args.learning_rate}"
         if args.num_train_epochs:

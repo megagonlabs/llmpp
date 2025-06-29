@@ -23,7 +23,7 @@ However, for the word that is the main predicate of the sentence, the dependent 
 input sentence:
 <<<SENTENCE>>>
 
-words:
+indexes and words:
 <<<TOKEN_TSV:INDEX_ORTHWS>>>
 
 - Task 1

@@ -21,4 +21,9 @@ else
         ${vllm_options}
 fi
 
-python -m llmpp.eval ${eval_jsonl}
+if [[ "${target_jsonl}" == *-linearized-* ]]; then
+  option="--r"
+else
+  option=""
+fi
+python -m llmpp.eval ${option} ${eval_jsonl}

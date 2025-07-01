@@ -16,6 +16,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--apply_bracketing_recovery", "--r", action="store_true")
     parser.add_argument("--index_field", "--i", default=0, type=int)
     parser.add_argument("--use_deprel_subtypes", "--s", action="store_true")
+    parser.add_argument("--stop_on_error", "--e", action="store_true")
     args = parser.parse_args()
     return args
 
@@ -41,12 +42,12 @@ def main():
             with open(completion_results_jsonl, "r", encoding="utf8") as fin:
                 completion_results = [json.loads(_)["messages"] for _ in fin]
             if args.format == "auto" and select_last_bracketing_line(completion_results[0][-1]["content"]) or args.format == "bracketing":
-                table_jsonl_path = bracket_to_table(completion_results_jsonl, apply_recovery=args.apply_bracketing_recovery)
+                table_jsonl_path = bracket_to_table(completion_results_jsonl, apply_recovery=args.apply_bracketing_recovery, stop_on_error=args.stop_on_error)
                 with open(table_jsonl_path, "r", encoding="utf8") as fin:
                     completion_results = [json.loads(_)["messages"] for _ in fin]
 
             with open(output_report_path, "w", encoding="utf8") as f_report:
-                stats = eval(completion_results, args.index_field, args.use_deprel_subtypes, f_report, ignore_punct=False)
+                stats = eval(completion_results, args.index_field, args.use_deprel_subtypes, f_report, ignore_punct=False, stop_on_error=args.stop_on_error)
             stats["config"] = config
             stats["config"]["ignore_punct"] = False
             with open(output_eval_json_path, "w", encoding="utf8") as f_eval:
@@ -64,6 +65,8 @@ def main():
             print("without punct:", stats["digest"])
             print(completion_results_jsonl, *[stats[u][k] for u in REPORTING_FIELDS for k in REPORTING_FIELDS[u]], sep="\t")
         except Exception as e:
+            if args.stop_on_error:
+                raise e
             print(e, file=sys.stderr)
             print("skipping", completion_results_jsonl)
         print()
@@ -81,6 +84,7 @@ def eval(
     use_deprel_subtypes: bool,
     f_report: IO,
     ignore_punct: bool = False,
+    stop_on_error: bool = False,
 ) -> dict:
     gold_sentence = 0
     gold_token = 0
@@ -113,8 +117,8 @@ def eval(
         result = messages[-1]
         gold_sentence += 1
         assert "gold" in result, f"Inference result not saved in line #{line_index}"
-        gold = parse_records(result["gold"], index_field)
-        content = parse_records(result["content"], index_field)
+        gold = parse_records(result["gold"], index_field, stop_on_error)
+        content = parse_records(result["content"], index_field, stop_on_error)
         if len(gold) == len(content):
             content_sentence += 1
         else:
@@ -287,7 +291,7 @@ def eval(
     }
 
 
-def parse_records(content: str, index_field: int) -> list[dict]:
+def parse_records(content: str, index_field: int, stop_on_error: bool = False) -> list[dict]:
     rows = select_last_tsv_part(content)
     field_num = len(rows[0])
     if field_num < 3:
@@ -314,7 +318,9 @@ def parse_records(content: str, index_field: int) -> list[dict]:
                     records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "upos": r[2], "head": int(r[4]), "deprel": r[5]})
                 else:
                     records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "upos": r[2], "head": int(r[3]), "deprel": r[5]})
-        except Exception:
+        except Exception as e:
+            if stop_on_error:
+                raise e
             break
     if records:  # eliminate tail whitespaces of last token
         records[-1]["form"] = records[-1]["form"].rstrip(" ")

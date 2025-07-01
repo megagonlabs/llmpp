@@ -209,7 +209,7 @@ def recover_bracketing(text: str) -> str:
             recovered += text[i]
         else:
             skipped += 1
-    if balance[-1] + skipped > 0:
+    if balance and balance[-1] + skipped > 0:
         recovered += ")" * (balance[-1] + skipped)
     return recovered
 

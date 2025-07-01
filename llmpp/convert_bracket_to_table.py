@@ -43,11 +43,11 @@ def flatten_tree(tree: list[str|list]) -> list:
             else:
                 child = _traverse_tree(subtree, records)
                 children.append(child)
+        assert head, tree
         return head
 
     records = []
     root = _traverse_tree(tree, records)
-    assert root, tree
     root[3] = "0"
     for index, r in enumerate(records, 1):
         r[0] = str(index)

@@ -30,7 +30,11 @@ def flatten_tree(tree: list[str|list]) -> list:
         children = []
         label = tree[0]
         for subtree in tree[1:]:
-            if len(subtree) == 2 and isinstance(subtree[1], str):
+            if len(subtree) == 1:
+                assert isinstance(subtree[0], str), f"bad subtree {subtree}"
+                head = [None, "", pos, None, label, children]
+                records.append(head)
+            elif len(subtree) == 2 and isinstance(subtree[1], str):
                 pos, word = subtree
                 head = [None, word, pos, None, label, children]
                 records.append(head)

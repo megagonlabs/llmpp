@@ -168,7 +168,6 @@ def constituent_tree(units: list[str]) -> list[str | list]:
                 constituent[-1] += " " + word
             else:
                 constituent.append(word)
-    assert len(constituent) > 1, f"bad sequence: {units}"
     return units[1:], constituent
 
 

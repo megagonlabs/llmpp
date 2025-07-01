@@ -300,7 +300,7 @@ def parse_records(content: str, index_field: int) -> list[dict]:
         try:
             assert field_num == len(r)
             if field_num == 4:
-                records.append({"index": int(r[0]), "upos": r[1], "head": int(r[2]), "deprel": r[3]})
+                records.append({"index": int(r[0]), "form": "", "upos": r[1], "head": int(r[2]), "deprel": r[3]})
                 # records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "head": int(r[2]), "deprel": r[3]})
             elif field_num == 5:
                 if f2_isdigit:

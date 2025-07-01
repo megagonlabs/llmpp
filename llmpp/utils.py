@@ -90,7 +90,7 @@ def select_last_bracketing_line(content: str) -> str | None:
         if line.startswith("(") and line.endswith(")"):
             return line
     else:
-        return "()"
+        return ""
 
 
 def select_last_tsv_part(content: str, ensure_tsv: bool = False) -> list[list[str]]:

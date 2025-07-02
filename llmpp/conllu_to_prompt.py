@@ -87,6 +87,7 @@ def main():
                     return f(token, l, r)
                 linearized_deprel = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}({t["POS"]} {t['ORTH']}){r}{space_between_rrb})")
                 linearized_no_orth = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}({t["POS"]}){r}{space_between_rrb})")
+                linearized_no_terminal = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}{t["POS"]}{r}{space_between_rrb})")
                 linearized_pos = " ".join(f'({t["POS"]} {t["ORTH"]})' for t in tokens)
 
                 masked_token_indexes = set()
@@ -128,6 +129,7 @@ def main():
                                 ["PREFILLED_TOKEN_INDEXES", ", ".join(str(_ + 1) for _ in prefilled_token_indexes)],
                                 ["LINEARIZED_DEPREL", linearized_deprel],
                                 ["LINEARIZED_NO_ORTH", linearized_no_orth],
+                                ["LINEARIZED_NO_TERMINAL", linearized_no_terminal],
                                 ["LINEARIZED_POS", linearized_pos],
                             ] + replacements:
                                 if meta_name == match.group(1):

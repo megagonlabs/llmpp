@@ -19,7 +19,7 @@ dataset_args:
 
 sft_config_args:
   output_dir: null  # defaults to {model.model_name_or_path}_trl[-lora]_{dataset.train_jsonl_path#stem}
-  per_device_train_batch_size: 3
+  per_device_train_batch_size: 2
   gradient_accumulation_steps: 8
   gradient_checkpointing: true
   num_train_epochs: 2

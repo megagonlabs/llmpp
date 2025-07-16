@@ -27,7 +27,7 @@ def save_merged_weights(
     model = AutoModelForCausalLM.from_pretrained(base_model_path, torch_dtype=torch.bfloat16, device_map="auto")
     model = PeftModel.from_pretrained(model, peft_model_path)
     merged_model = model.merge_and_unload()
-    merged_model.save_pretrained(output_dir)
+    merged_model.save_pretrained(output_dir, max_shard_size="2GB", safe_serialization=True)
     tokenizer = AutoTokenizer.from_pretrained(peft_model_path)
     tokenizer.save_pretrained(output_dir)
 

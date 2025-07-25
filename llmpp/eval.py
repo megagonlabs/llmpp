@@ -41,7 +41,7 @@ def main():
             }
             with open(completion_results_jsonl, "r", encoding="utf8") as fin:
                 completion_results = [json.loads(_)["messages"] for _ in fin]
-            if args.format == "auto" and select_last_bracketing_line(completion_results[0][-1]["content"]) or args.format == "bracketing":
+            if args.format == "bracketing" or args.format == "auto" and select_last_bracketing_line(completion_results[0][-1].get("gold") or completion_results[0][-1]["content"]):
                 table_jsonl_path = bracket_to_table(completion_results_jsonl, apply_recovery=args.apply_bracketing_recovery, stop_on_error=args.stop_on_error)
                 with open(table_jsonl_path, "r", encoding="utf8") as fin:
                     completion_results = [json.loads(_)["messages"] for _ in fin]

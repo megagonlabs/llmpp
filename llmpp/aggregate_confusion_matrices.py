@@ -7,15 +7,21 @@ from collections import defaultdict
 
 model_path_pattern = re.compile(r"/(.+?)[-_]([0-9]+)[Bb]-stage([0-9]+)(?:-ingredient)?([0-9]*)-step([0-9]+)-tokens([0-9]+)B_([^_/]+_[^_/]+)_([^./]+)")
 
+upos_list = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X"]
 
-def calc_stats(stats, key_pattern=None):
+deprel_list = ["acl", "advcl", "advmod", "amod", "appos", "aux", "case", "cc", "ccomp", "clf", "compound", "conj", "cop", "csubj", "det", "dep", "discourse", "dislocated", "expl", "fixed", "flat", "goeswith", "iobj", "list", "mark", "nmod", "nsubj", "nummod", "obj", "obl", "orphan", "parataxis", "punct", "reparandum", "root", "vocative", "xcomp"]
+
+
+def calc_stats(stats, keys=None, key_pattern=None):
     gold_total = 0
     content_total = 0
     correct_total = 0
     gold_stats = defaultdict(int)
     content_stats = defaultdict(int)
     correct_stats = defaultdict(int)
-    if key_pattern:
+    if keys:
+        gold_keys = sorted(keys)
+    elif key_pattern:
         gold_keys = sorted({re.search(key_pattern, k).group(1) for k in stats})
     else:
         gold_keys = sorted(stats.keys())
@@ -35,10 +41,10 @@ def calc_stats(stats, key_pattern=None):
                 correct_stats[gold] += c
     recalls = {"*": correct_total / gold_total if gold_total else 0.}
     for key in gold_keys:
-        recalls[key] = correct_stats.get(key, 0) / gold_stats[key] if gold_stats.get(key) else 0.
+        recalls[key] = correct_stats.get(key, 0) / gold_stats[key] if gold_stats.get(key) else ""
     precisions = {"*": correct_total / content_total if content_total else 0.}
     for key in gold_keys:
-        precisions[key] = correct_stats.get(key, 0) / content_stats[key] if content_stats.get(key) else 0.
+        precisions[key] = correct_stats.get(key, 0) / content_stats[key] if content_stats.get(key) else ""
     return {
         "recall": recalls,
         "precision": precisions,
@@ -61,10 +67,10 @@ def main():
         key = (model_name, model_size, stage, ingredient, step, num_tokens)
         with open(target_path, "r", encoding="utf8") as fin:
             result = json.load(fin)
-        upos_stats[key] = calc_stats(result["confusion_upos"])
+        upos_stats[key] = calc_stats(result["confusion_upos"], keys=upos_list)
         upos_stats[key]["recall"]["*"] = result["token"]["correct_upos"] / (result["token"]["gold"] or 1)
         upos_stats[key]["precision"]["*"] = result["token"]["correct_upos"] / (result["token"]["content"] or 1)
-        deprel_stats[key] = calc_stats(result["confusion_deprel"], r"^([^:]+)")
+        deprel_stats[key] = calc_stats(result["confusion_deprel"], keys=deprel_list, key_pattern=r"^([^:]+)")
         deprel_stats[key]["recall"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["gold"] or 1)
         deprel_stats[key]["precision"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["content"] or 1)
         total_stats[key] = {

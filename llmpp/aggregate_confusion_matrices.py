@@ -41,10 +41,10 @@ def calc_stats(stats, keys=None, key_pattern=None):
                 correct_stats[gold] += c
     recalls = {"*": correct_total / gold_total if gold_total else 0.}
     for key in gold_keys:
-        recalls[key] = correct_stats.get(key, 0) / gold_stats[key] if gold_stats.get(key) else ""
+        recalls[key] = correct_stats.get(key, 0) / gold_stats[key] if gold_stats.get(key) else 0.
     precisions = {"*": correct_total / content_total if content_total else 0.}
     for key in gold_keys:
-        precisions[key] = correct_stats.get(key, 0) / content_stats[key] if content_stats.get(key) else ""
+        precisions[key] = correct_stats.get(key, 0) / content_stats[key] if content_stats.get(key) else 0.
     return {
         "recall": recalls,
         "precision": precisions,

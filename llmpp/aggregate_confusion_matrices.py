@@ -49,6 +49,7 @@ def calc_stats(stats, key_pattern=None):
 def main():
     upos_stats = {}
     deprel_stats = {}
+    total_stats = {}
     for target_path in sys.argv[1:]:
         m = model_path_pattern.search(target_path)
         model_name = m.group(1)
@@ -61,12 +62,28 @@ def main():
         with open(target_path, "r", encoding="utf8") as fin:
             result = json.load(fin)
         upos_stats[key] = calc_stats(result["confusion_upos"])
+        upos_stats[key]["recall"]["*"] = result["token"]["correct_upos"] / (result["token"]["gold"] or 1)
+        upos_stats[key]["precision"]["*"] = result["token"]["correct_upos"] / (result["token"]["content"] or 1)
         deprel_stats[key] = calc_stats(result["confusion_deprel"], r"^([^:]+)")
+        deprel_stats[key]["recall"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["gold"] or 1)
+        deprel_stats[key]["precision"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["content"] or 1)
+        total_stats[key] = {
+            "recall": {
+                "Aligned": result["token"]["aligned"] / (result["token"]["gold"] or 1),
+                "UAS": result["token"]["correct_head"] / (result["token"]["gold"] or 1),
+            },
+            "precision": {
+                "Aligned": result["token"]["aligned"] / (result["token"]["content"] or 1),
+                "UAS": result["token"]["correct_head"] / (result["token"]["content"] or 1),
+            },
+        }
     for title, stats, metrics in [
         ["UPOS Recall", upos_stats, "recall"],
         ["UPOS Precision", upos_stats, "precision"],
         ["DEPREL Recall", deprel_stats, "recall"],
         ["DEPREL Precision", deprel_stats, "precision"],
+        ["TOTAL Recall", total_stats, "recall"],
+        ["TOTAL Precision", total_stats, "precision"],
     ]:
         keys = sorted(stats.keys())
         labels = sorted(stats[keys[0]][metrics].keys())

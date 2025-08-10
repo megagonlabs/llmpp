@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eu
+
 sft_method=llmpp.sft_$1
 model=$2
 dataset=$3

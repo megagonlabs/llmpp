@@ -2,10 +2,10 @@
 
 sft_method=llmpp.sft_$1
 model=$2
-template=$3
-datasets=${@:4:($#-3)}
+dataset=$3
+templates=${@:4:($#-3)}
 
-for dataset in ${datasets}
+for template in ${templates}
 do
   python -m ${sft_method} \
     --c config/${model}.yaml \

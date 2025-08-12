@@ -154,27 +154,29 @@ def yield_constituent_units(text):
     assert not unit, f"invalid tree: {text}"
 
 
-def constituent_tree(units: list[str]) -> list[str | list]:
+def constituent_tree(units: list[str], no_terminal=False) -> list[str | list]:
     assert units.pop(0) == "(", f"bad sequence: {units}"
     constituent = [units.pop(0)]
     assert constituent[0] not in ["(", ")"] , f"bad sequence: {units}"
     while units[0] != ")":
         if units[0] == "(":
-            units, subtree = constituent_tree(units)
+            units, subtree = constituent_tree(units, no_terminal=no_terminal)
             constituent.append(subtree)
         else:
             word = units.pop(0)
             if len(constituent) > 1 and isinstance(constituent[-1], str):
                 constituent[-1] += " " + word
+            elif no_terminal:
+                constituent.append([word])
             else:
                 constituent.append(word)
     return units[1:], constituent
 
 
-def constituent_trees(units: list[str]):
+def constituent_trees(units: list[str], no_terminal=False):
     while units:
         assert units[0] == "("
-        units, tree = constituent_tree(units[1:])
+        units, tree = constituent_tree(units[1:], no_terminal=no_terminal)
         assert units[0] == ")"
         units = units[1:]
         yield tree

@@ -10,6 +10,7 @@ from .utils import constituent_tree, recover_bracketing, recover_word, select_la
 def add_args(parser: ArgumentParser = None) -> ArgumentParser:
     parser = parser or ArgumentParser()
     parser.add_argument("completion_results_jsonl_files", nargs="+")
+    parser.add_argument("--no-terminal", "--nt", action="store_true")
     parser.add_argument("--apply_recovery", "--r", action="store_true")
     parser.add_argument("--stop_on_error", "--e", action="store_true")
     return parser
@@ -58,7 +59,13 @@ def flatten_tree(tree: list[str|list]) -> list:
     return records
 
 
-def bracket_to_table(bracket_jsonl_path: str, table_jsonl_path: str = None, apply_recovery: bool = False, stop_on_error: bool = False):
+def bracket_to_table(
+        bracket_jsonl_path: str,
+        table_jsonl_path: str = None,
+        no_terminal: bool = False,
+        apply_recovery: bool = False,
+        stop_on_error: bool = False,
+):
     if not table_jsonl_path:
         p = Path(bracket_jsonl_path)
         table_jsonl_path = f"{p.parent / p.stem}.table.jsonl"
@@ -83,14 +90,14 @@ def bracket_to_table(bracket_jsonl_path: str, table_jsonl_path: str = None, appl
                     gold_text = re.sub(r"\) +", ")", gold_text)
                     pred_text = recover_word(gold_text.strip(), pred_text)
             try:
-                pred_table = flatten_tree(constituent_tree(list(yield_constituent_units(pred_text)))[1])
+                pred_table = flatten_tree(constituent_tree(list(yield_constituent_units(pred_text)), no_terminal)[1])
             except Exception as e:
                 if stop_on_error:
                     print(result, file=sys.stderr)
                     raise e
                 pred_table = []
             try:
-                gold_table = flatten_tree(constituent_tree(list(yield_constituent_units(gold_text)))[1]) if gold_text else None
+                gold_table = flatten_tree(constituent_tree(list(yield_constituent_units(gold_text)), no_terminal)[1]) if gold_text else None
             except Exception as e:
                 print(result, file=sys.stderr)
                 print(gold_text, file=sys.stderr)
@@ -110,7 +117,12 @@ def bracket_to_table(bracket_jsonl_path: str, table_jsonl_path: str = None, appl
 def main():
     args = add_args().parse_args()
     for prompt_jsonl_path in args.completion_results_jsonl_files:
-        table_jsonl_path = bracket_to_table(prompt_jsonl_path, apply_recovery=args.apply_recovery, stop_on_error=args.stop_on_error)
+        table_jsonl_path = bracket_to_table(
+            prompt_jsonl_path,
+            no_terminal=args.no_terminal,
+            apply_recovery=args.apply_recovery,
+            stop_on_error=args.stop_on_error,
+        )
         print(f"bracketed: {prompt_jsonl_path}\n => table: {table_jsonl_path}", file=sys.stderr)
 
 

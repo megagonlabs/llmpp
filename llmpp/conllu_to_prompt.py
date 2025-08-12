@@ -87,7 +87,7 @@ def main():
                     return f(token, l, r)
                 linearized_deprel = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}({t["POS"]} {t['ORTH']}){r}{space_between_rrb})")
                 linearized_no_orth = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}({t["POS"]}){r}{space_between_rrb})")
-                linearized_no_terminal = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}{t["POS"]}{r}{space_between_rrb})")
+                linearized_no_terminal = traverse(root, lambda t, l, r: f"({t['LABEL']} {l}{t["POS"]}{r + space_between_rrb if r else ''})")
                 linearized_pos = " ".join(f'({t["POS"]} {t["ORTH"]})' for t in tokens)
 
                 masked_token_indexes = set()

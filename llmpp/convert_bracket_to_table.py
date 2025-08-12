@@ -44,7 +44,7 @@ def flatten_tree(tree: list[str|list]) -> list:
             else:
                 child = _traverse_tree(subtree, records)
                 children.append(child)
-        assert head, tree
+        assert head, f"no head: {tree}"
         return head
 
     records = []
@@ -99,8 +99,9 @@ def bracket_to_table(
             try:
                 gold_table = flatten_tree(constituent_tree(list(yield_constituent_units(gold_text)), no_terminal)[1]) if gold_text else None
             except Exception as e:
-                print(result, file=sys.stderr)
-                print(gold_text, file=sys.stderr)
+                if stop_on_error:
+                    print(result, file=sys.stderr)
+                    print(gold_text, file=sys.stderr)
                 raise e
             prompt["messages"].append(
                 {

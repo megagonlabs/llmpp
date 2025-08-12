@@ -91,6 +91,7 @@ def eval(
     f_report: IO,
     ignore_punct: bool = False,
     stop_on_error: bool = False,
+    debug: bool = False,
 ) -> dict:
     gold_sentence = 0
     gold_token = 0
@@ -231,6 +232,19 @@ def eval(
             correct_head_sentence += 1
         if correct_head_deprel:
             correct_head_deprel_sentence += 1
+        
+        if debug:
+            text = "".join(r["form"] for r in content)
+            print(f"# text = {text}")
+            index_map = {r["index"]:i for i, r in enumerate(content, 1)}
+            for r in content:
+                index = index_map[r["index"]]
+                head = index_map[r["head"]["index"]] if r["deprel"] != "root" else 0
+                form = r["form"].rstrip()
+                upos = r["upos"]
+                deprel = r["deprel"]
+                print(index, form, "_", upos, "_", "_", head, deprel, "_", "_", sep="\t")
+            print()
 
         single_root = is_single_root(content, f_report)
         no_loop = has_no_loop(content, f_report)

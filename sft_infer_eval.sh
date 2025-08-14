@@ -11,6 +11,9 @@ batch_size=""
 for template in ${templates}
 do
   if [[ "${template}" == "--b" ]]; then
+    batch_size="--b"
+    continue
+  elif [[ "${batch_size}" == "--b" ]]; then
     batch_size="--b ${template}"
     continue
   fi

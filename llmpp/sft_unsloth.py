@@ -23,7 +23,6 @@ def run_sft(
     lora_args: dict,
     sft_trainer_args: dict = {},
     unsloth_args: dict = {},
-    save_merged = False,
     **kwargs,
 ):
     assert not tokenizer_args.get("pretrained_model_name_or_path"), "unsloth does not support external tokenizer"
@@ -121,12 +120,8 @@ def run_sft(
             trainer.model.print_trainable_parameters()
 
         trainer.train()
-        if is_rank0:
-            if save_merged:
-                model.save_pretrained_merged(sft_config_args["output_dir"], tokenizer, save_method = "merged_16bit",)
-            else:
-                trainer.save_model()
-                tokenizer.save_pretrained(sft_config_args["output_dir"])
+        trainer.save_model()
+        tokenizer.save_pretrained(sft_config_args["output_dir"])
 
     finally:
         if dataset_args["replace_system_role"]:

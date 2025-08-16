@@ -44,3 +44,7 @@ lora_args:
 #chat_template_replace_pattern:
 #  pattern: "^\\{\\{ bos_token \\}\\}"
 #  repl: ""
+
+post_process: [
+  "merge_lora_weights"
+]

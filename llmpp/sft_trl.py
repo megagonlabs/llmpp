@@ -15,10 +15,8 @@ def prepare_model(
     tokenizer_args: dict,
     sft_config_args: dict,
     lora_args: dict,
-    save_merged: bool,
     **kwargs,
 ):
-    assert not save_merged, "save_merged not supported"
     if not tokenizer_args.get("pretrained_model_name_or_path"):
         tokenizer_args["pretrained_model_name_or_path"] = model_args["pretrained_model_name_or_path"]
     tokenizer = AutoTokenizer.from_pretrained(**tokenizer_args)

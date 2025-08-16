@@ -33,7 +33,6 @@ def get_config(parser: ArgumentParser = None):
     parser.add_argument("--lora_r", "--r", type=int)
     parser.add_argument("--lora_alpha", "--a", type=int)
     parser.add_argument("--lora_all_linear_with_lm_head", "--lmh", action="store_true")
-    parser.add_argument("--save_merged", "--sm", action="store_true")
     args = parser.parse_args()
     with open(args.config, "r", encoding="utf8") as fin:
         config = yaml.safe_load(fin)
@@ -68,7 +67,6 @@ def get_config(parser: ArgumentParser = None):
             config["lora_args"]["lora_alpha"] = args.lora_r
     if args.lora_all_linear_with_lm_head:
         config["lora_args"]["target_modules"] = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj", "lm_head"]
-    config["save_merged"] = args.save_merged
 
     if not config["sft_config_args"]["output_dir"]:
         model_name = config["model_args"]["pretrained_model_name_or_path"].rstrip("/").split("/")[-1]
@@ -170,11 +168,8 @@ def run_sft(config, prepare_model_func):
 
         trainer.train()
         if is_rank0:
-            if config["save_merged"]:
-                model.save_pretrained_merged(config["sft_config_args"]["output_dir"], tokenizer, save_method = "merged_16bit",)
-            else:
-                trainer.save_model()
-                tokenizer.save_pretrained(config["sft_config_args"]["output_dir"])
+            trainer.save_model()
+            tokenizer.save_pretrained(config["sft_config_args"]["output_dir"])
     finally:
         if dataset_args["replace_system_role"]:
             os.unlink(train_jsonl_path)

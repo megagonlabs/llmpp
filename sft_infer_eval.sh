@@ -58,6 +58,7 @@ do
   elif [[ "${epoch}" == "--e" ]]; then
     epoch="--e ${template}"
     echo epoch changed: ${epoch}
+    model=${model}-epoch${template}
     continue
   fi
 

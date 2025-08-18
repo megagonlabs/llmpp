@@ -22,7 +22,7 @@ sft_config_args:
   per_device_train_batch_size: 3
   gradient_accumulation_steps: 8
   gradient_checkpointing: true
-  num_train_epochs: 2
+  num_train_epochs: 3
   learning_rate: 1.0e-4
   save_strategy: "no"
   logging_steps: 0.01

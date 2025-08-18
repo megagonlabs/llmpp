@@ -9,6 +9,7 @@ dataset=$4
 templates=${@:5:($#-4)}
 batch_size=""
 epoch=""
+epoch_suffix=""
 
 model=${model%/}
 
@@ -58,11 +59,11 @@ do
   elif [[ "${epoch}" == "--e" ]]; then
     epoch="--e ${template}"
     echo epoch changed: ${epoch}
-    model=${model}-epoch${template}
+    epoch_suffix=-epoch${template}
     continue
   fi
 
-  peft_dir=${model}_${dataset}_${template}.train
+  peft_dir=${model}${epoch_suffix}_${dataset}_${template}.train
   train_jsonl=data/${dataset}/${template}.train.jsonl
   test_jsonl=data/${dataset}/${template}.test.jsonl
   set +e

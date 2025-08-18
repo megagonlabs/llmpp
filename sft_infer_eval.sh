@@ -74,7 +74,7 @@ do
   fi
 
   if [ -f ${result_dir}/${test_jsonl}/completion.eval.json ]; then
-    echo skip training due to existence of ${peft_dir}/${test_jsonl}/completion.eval.json
+    echo skip training due to existence of ${result_dir}/${test_jsonl}/completion.eval.json
     continue
   fi
 

@@ -3,63 +3,52 @@
 set -eu
 
 sft_method=llmpp.sft_$1
-config=$2
-model=$3
-dataset=$4
-templates=${@:5:($#-4)}
+targets=${@:2:($#-1)}
+config=""
+model=""
+dataset=""
+template=""
 batch_size=""
 epoch=""
 epoch_suffix=""
 
-model=${model%/}
-
 echo sft_method: ${sft_method}
-echo config: ${config}
-echo model: ${model}
-echo dataset: data/${dataset}/
-echo templates: ${templates}
+echo targets: ${targets}
 
-for template in ${templates}
+setup=1
+attr=""
+for target in ${targets}
 do
-  if [[ "${template}" == "--c" ]]; then
-    config="--c"
+  if [[ ${target} == "-" ]]; then
+    setup=$((1-setup))
     continue
-  elif [[ "${config}" == "--c" ]]; then
-    config=${template}
-    echo config changed: ${config}
+
+  if [[ ${target} == "--"* ]]; then
+    attr=${target}
     continue
-  fi
-  if [[ "${template}" == "--m" ]]; then
-    model="--m"
+  if [[ "${attr}" == "--c" ]]; then
+    config=${target}
+    echo config=${config}
+  elif [[ "${attr}" == "--m" ]]; then
+    model=${target%/}
+    echo model=${model}
+  elif [[ "${attr}" == "--d" ]]; then
+    dataset=${target}
+    echo dataset=data/${dataset}
+  elif [[ "${attr}" == "--t" ]]; then
+    template=${target}
+    echo template=${template}
+  elif [[ "${attr}" == "--b" ]]; then
+    batch_size="--b ${target}"
+    echo batch_size=${target}
     continue
-  elif [[ "${model}" == "--m" ]]; then
-    model=${template%/}
-    echo model changed: ${model}
-    continue
-  fi
-  if [[ "${template}" == "--d" ]]; then
-    dataset="--d"
-    continue
-  elif [[ "${dataset}" == "--d" ]]; then
-    dataset=${template}
-    echo dataset changed: data/${dataset}
-    continue
-  fi
-  if [[ "${template}" == "--b" ]]; then
-    batch_size="--b"
-    continue
-  elif [[ "${batch_size}" == "--b" ]]; then
-    batch_size="--b ${template}"
-    echo batch size changed: ${batch_size}
+  elif [[ "${attr}" == "--e" ]]; then
+    epoch="--e ${target}"
+    echo epoch=${target}
+    epoch_suffix=-epoch${target}
     continue
   fi
-  if [[ "${template}" == "--e" ]]; then
-    epoch="--e"
-    continue
-  elif [[ "${epoch}" == "--e" ]]; then
-    epoch="--e ${template}"
-    echo epoch changed: ${epoch}
-    epoch_suffix=-epoch${template}
+  if [ ${setup} -eq 1 ]; then
     continue
   fi
 

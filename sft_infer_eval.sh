@@ -22,10 +22,11 @@ do
   if [[ ${target} == "-" ]]; then
     setup=$((1-setup))
     continue
-
+  fi
   if [[ ${target} == "--"* ]]; then
     attr=${target}
     continue
+  fi
   if [[ "${attr}" == "--c" ]]; then
     config=${target}
     echo config=${config}

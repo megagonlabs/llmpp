@@ -1,6 +1,7 @@
 import json
 import random
 import re
+import sys
 import tomllib
 from argparse import ArgumentParser
 from copy import deepcopy
@@ -152,6 +153,7 @@ def main():
                 for messages in outputs:
                     json.dump({"messages": messages}, fout, ensure_ascii=False)
                     print(file=fout)
+            print(f"prompt generated: {output_jsonl_path}", file=sys.stderr)
 
 
 CONLLU_TEXT_PATTERN = re.compile(

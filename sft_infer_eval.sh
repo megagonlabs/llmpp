@@ -11,6 +11,8 @@ template=""
 batch_size=""
 epoch=""
 epoch_suffix=""
+lr=""
+lr_suffix=""
 
 echo sft_method: ${sft_method}
 echo targets: ${targets}
@@ -43,6 +45,11 @@ do
     batch_size="--b ${target}"
     echo batch_size=${target}
     continue
+  elif [[ "${attr}" == "--lr" ]]; then
+    lr="--lr ${target}"
+    echo lr=${target}
+    lr_suffix=-lr${target}
+    continue
   elif [[ "${attr}" == "--e" ]]; then
     epoch="--e ${target}"
     echo epoch=${target}
@@ -53,7 +60,7 @@ do
     continue
   fi
 
-  peft_dir=${model}${epoch_suffix}_${dataset}_${template}.train
+  peft_dir=${model}${lr_suffix}${epoch_suffix}_${dataset}_${template}.train
   train_jsonl=data/${dataset}/${template}.train.jsonl
   test_jsonl=data/${dataset}/${template}.test.jsonl
   set +e
@@ -73,7 +80,7 @@ do
   if [ -f ${peft_dir}/adapter_config.json ]; then
     echo use existing ${result_dir}/
   else
-    python -m ${sft_method} ${batch_size} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
+    python -m ${sft_method} ${batch_size} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
   fi
 
   if [ ${merge_lora_weights} ] ; then

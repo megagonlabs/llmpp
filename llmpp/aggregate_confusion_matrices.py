@@ -5,7 +5,7 @@ import sys
 from collections import defaultdict
 
 
-model_path_pattern = re.compile(r"/(.+?)[-_]([0-9]+)[Bb]-stage([0-9]+)(?:-ingredient)?([0-9]*)-step([0-9]+)-tokens([0-9]+)B_([^_/]+_[^_/]+)_([^./]+)")
+model_path_pattern = re.compile(r"/(.+?)[-_]([0-9]+)[Bb]-stage([0-9]+)(?:-ingredient)?([0-9]*)-step([0-9]+)-tokens([0-9]+)B([^_]*)_([^_/]+_[^_/]+)_([^./]+)")
 
 upos_list = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X"]
 

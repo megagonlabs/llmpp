@@ -1,6 +1,8 @@
 model_args:
+  device_map: "auto"
   pretrained_model_name_or_path: "models/gemma-2-9b"
-  torch_dtype: "bfloat16"
+  dtype: "bfloat16"
+  load_in_8bit: true
   attn_implementation: "eager"
 
 tokenizer_args:
@@ -24,7 +26,7 @@ sft_config_args:
   gradient_accumulation_steps: 8
   gradient_checkpointing: true
   num_train_epochs: 3
-  learning_rate: 2.0e-4
+  learning_rate: 3.0e-4
   save_strategy: "no"
   logging_steps: 0.01
   # eval_steps: 0.25

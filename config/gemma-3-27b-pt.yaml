@@ -1,6 +1,7 @@
 model_args:
+  device_map: "auto"
   pretrained_model_name_or_path: "models/gemma-3-12b-pt"
-  torch_dtype: "bfloat16"
+  dtype: "bfloat16"
   attn_implementation: "eager"
 
 tokenizer_args:
@@ -43,6 +44,7 @@ lora_args:
 
 unsloth_args:
   peft_model_args:
+  device_map: "auto"
     finetune_vision_layers: false
     finetune_language_layers: true
     finetune_attention_modules: true

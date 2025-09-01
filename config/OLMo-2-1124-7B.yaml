@@ -1,6 +1,7 @@
 model_args:
+  device_map: "auto"
   pretrained_model_name_or_path: "models/OLMo-2-1124-7B"
-  torch_dtype: "bfloat16"
+  dtype: "bfloat16"
   pad_token_id: 0
 
 tokenizer_args:

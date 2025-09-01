@@ -1,6 +1,7 @@
 model_args:
+  device_map: "auto"
   pretrained_model_name_or_path: "models/Qwen2.5-7B-Instruct"
-  torch_dtype: "bfloat16"
+  dtype: "bfloat16"
 
 tokenizer_args:
   pretrained_model_name_or_path: null  # defaults to model.model_name_or_path

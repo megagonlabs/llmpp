@@ -1,6 +1,7 @@
 model_args:
+  device_map: "auto"
   pretrained_model_name_or_path: "models/gemma-2-9b-it"
-  torch_dtype: "bfloat16"
+  dtype: "bfloat16"
   attn_implementation: "eager"
 
 tokenizer_args:
@@ -40,7 +41,3 @@ lora_args:
   r: 8
   lora_dropout: 0.05
   task_type: "CAUSAL_LM"
-
-chat_template_replace_pattern:
-  pattern: "^\\{\\{ bos_token \\}\\}"
-  repl: ""

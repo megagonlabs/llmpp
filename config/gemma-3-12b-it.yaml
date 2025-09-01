@@ -1,6 +1,7 @@
 model_args:
+  device_map: "auto"
   pretrained_model_name_or_path: "models/gemma-3-12b-it"
-  torch_dtype: "bfloat16"
+  dtype: "bfloat16"
   attn_implementation: "eager"
 
 tokenizer_args:
@@ -9,8 +10,8 @@ tokenizer_args:
   padding_side: "right"
 
 collator_args:
-  response_template: [105, 4368, 107]  # "<start_of_turn>model\n"
-  instruction_template: [105, 2364, 107]  # "<start_of_turn>user\n"
+  response_template: "<start_of_turn>model\n"
+  instruction_template: "<start_of_turn>user\n"
   mlm: false
 
 dataset_args:
@@ -42,11 +43,13 @@ lora_args:
 
 unsloth_args:
   peft_model_args:
+  device_map: "auto"
     finetune_vision_layers: false
     finetune_language_layers: true
     finetune_attention_modules: true
     finetune_mlp_modules: true
-
-chat_template_replace_pattern:
-  pattern: "^\\{\\{ bos_token \\}\\}"
-  repl: ""
+  chat_template: "gemma-3"
+  removeprefix: "<bos>"
+  train_on_responses_only:
+    instruction_part: "<start_of_turn>user\n"
+    response_part: "<start_of_turn>model\n"

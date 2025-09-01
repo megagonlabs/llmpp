@@ -29,7 +29,7 @@ def run_sft(
 
     is_rank0 = os.getenv("LOCAL_RANK", "0") == "0"
 
-    model_args["torch_dtype"] = getattr(torch, model_args["torch_dtype"])
+    model_args["dtype"] = getattr(torch, model_args["dtype"])
     model, tokenizer = FastModel.from_pretrained(
         model_name = model_args["pretrained_model_name_or_path"],
         max_seq_length = sft_config_args["max_seq_length"],

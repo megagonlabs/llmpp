@@ -25,7 +25,7 @@ def prepare_model(
     if lora_args.pop("use_lora"):
         lora_config = LoraConfig(**lora_args)
 
-    model_args["torch_dtype"] = getattr(torch, model_args["torch_dtype"])
+    model_args["dtype"] = getattr(torch, model_args["dtype"])
     if "gemma-3-" in model_args["pretrained_model_name_or_path"]:
         model = transformers.Gemma3ForConditionalGeneration.from_pretrained(**model_args)
     else:

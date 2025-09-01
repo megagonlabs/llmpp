@@ -89,7 +89,10 @@ do
 
   ./infer_and_eval.sh ${result_dir} ${test_jsonl}
 
+  mkdir -p results/
+  mv ${peft_dir} results/
   if [ ${merge_lora_weights} ]; then
     rm -f ${result_dir}/model*.safetensors ${result_dir}/model.safetensors.index.json
+    mv ${result_dir} results/
   fi
 done

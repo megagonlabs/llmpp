@@ -84,15 +84,11 @@ do
   fi
 
   if [ ${merge_lora_weights} ] ; then
-    python -m llmpp.merge_peft_model ${peft_dir}
-  fi
-
-  ./infer_and_eval.sh ${result_dir} ${test_jsonl}
-
-  mkdir -p results/
-  mv ${peft_dir} results/
-  if [ ${merge_lora_weights} ]; then
-    rm -f ${result_dir}/model*.safetensors ${result_dir}/model.safetensors.index.json
-    mv ${result_dir} results/
+    python -m llmpp.merge_peft_model ${peft_dir} local/${peft_dir}.merged
+    ./infer_and_eval.sh ${result_dir} ${test_jsonl}
+    rm -f local/${peft_dir}.merged/model*.safetensors local/${peft_dir}.merged/model.safetensors.index.json
+    mv local/${peft_dir}.merged ${peft_dir}.merged
+  else
+    ./infer_and_eval.sh ${result_dir} ${test_jsonl}
   fi
 done

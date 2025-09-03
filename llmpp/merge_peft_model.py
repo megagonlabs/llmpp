@@ -9,7 +9,10 @@ def main():
     peft_model = sys.argv[1]
     peft_config = PeftConfig.from_pretrained(peft_model)
     base_model = peft_config.base_model_name_or_path
-    output_dir = peft_model.rstrip("/") + ".merged"
+    if len(sys.argv) > 2:
+        output_dir = sys.argv[2]
+    else:
+        output_dir = peft_model.rstrip("/") + ".merged"
     print(f"{base_model=}\n{peft_model=}\nmerge started", file=sys.stderr)
     save_merged_weights(
         base_model_path=base_model,

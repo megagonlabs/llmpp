@@ -78,7 +78,7 @@ do
   fi
 
   if [ -f ${peft_dir}/adapter_config.json ]; then
-    echo use existing ${result_dir}/
+    echo use existing ${peft_dir}/
   else
     python -m ${sft_method} ${batch_size} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
   fi

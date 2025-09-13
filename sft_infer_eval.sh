@@ -44,17 +44,23 @@ do
   elif [[ "${attr}" == "--b" ]]; then
     batch_size="--b ${target}"
     echo batch_size=${target}
+    unset attr
     continue
   elif [[ "${attr}" == "--lr" ]]; then
     lr="--lr ${target}"
     echo lr=${target}
     lr_suffix=-lr${target}
+    unset attr
     continue
   elif [[ "${attr}" == "--e" ]]; then
     epoch="--e ${target}"
     echo epoch=${target}
     epoch_suffix=-epoch${target}
+    unset attr
     continue
+  else
+    echo "invalid attribute ${attr}"
+    exit 1
   fi
   if [ ${setup} -eq 1 ]; then
     continue

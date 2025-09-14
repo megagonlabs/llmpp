@@ -8,4 +8,4 @@ datasets==4.0.0
 accelerate==1.10.1
 peft==0.17.1
 trl==0.19.1
-vllm==0.10.1.1+cu126
+vllm==0.10.1.1

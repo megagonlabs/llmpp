@@ -9,8 +9,14 @@ LOCAL_TOP_N = 10
 
 
 def main():
-    model_path = sys.argv[1]
-    jsonl_path_list = sys.argv[2:]
+    argv = sys.argv[1:]
+    if argv[0] == "--max":
+        max_length = int(argv[1])
+        argv = argv[2:]
+    else:
+        max_length = 0
+    model_path = argv[0]
+    jsonl_path_list = argv[1:]
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     try:
         tokenizer.apply_chat_template([{"system": "test"}, {"user": "test"}, {"assitant": "test"}])
@@ -31,6 +37,8 @@ def main():
                     prompt = json.loads(_)
                     messages = prompt["messages"]
                     length = len(tokenizer.apply_chat_template(messages, tokenize=True))
+                    if length <= max_length:
+                        print(_, end="", file=sys.stderr)
                     local_max = sorted(local_max + [length], reverse=True)[:LOCAL_TOP_N]
                     if total_max < length:
                         total_max = length

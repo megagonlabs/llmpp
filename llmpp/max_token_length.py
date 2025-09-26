@@ -25,28 +25,43 @@ def main():
         replace_system_role = True
     total_max = -1
     total_max_path = None
+    total_char = 0
+    total_token = 0
     for jsonl_path in jsonl_path_list:
         try:
             local_max = []
+            local_total_char = 0
+            local_total_token = 0
             if replace_system_role:
                 input_path = create_system_role_replaced_tempfiles(jsonl_path)
             else:
                 input_path = jsonl_path
             with open(input_path, "r", encoding="utf8") as fin:
                 for _ in fin:
-                    prompt = json.loads(_)
-                    messages = prompt["messages"]
-                    length = len(tokenizer.apply_chat_template(messages, tokenize=True))
-                    if length <= max_length:
+                    if input_path.endswith(".text"):
+                        text = _.rstrip("\n")
+                        char_length = len(text)
+                        token_length = len(tokenizer.encode(text))
+                    else:
+                        prompt = json.loads(_)
+                        messages = prompt["messages"]
+                        char_length = len(tokenizer.apply_chat_template(messages, tokenize=False))
+                        token_length = len(tokenizer.apply_chat_template(messages, tokenize=True))
+                    local_total_char += char_length
+                    local_total_token += token_length
+                    if token_length <= max_length:
                         print(_, end="", file=sys.stderr)
-                    local_max = sorted(local_max + [length], reverse=True)[:LOCAL_TOP_N]
-                    if total_max < length:
-                        total_max = length
+                    local_max = sorted(local_max + [token_length], reverse=True)[:LOCAL_TOP_N]
+                    if total_max < token_length:
+                        total_max = token_length
                         total_max_path = jsonl_path
-            print(*local_max, jsonl_path, sep="\t")
+            print(*local_max, "total_char:", local_total_char, f"{local_total_char / local_total_token:.2f} [char/token]", jsonl_path, sep="\t")
+            total_char += local_total_char
+            total_token += local_total_token
         except Exception as e:
             print("#ERR#", jsonl_path, e, sep="\t")
-    print(total_max, f"total: {total_max_path}", sep="\t")
+    print("total:", total_max, total_max_path, sep="\t")
+    print(f"{total_char} [char]", f"{total_char / total_token:.2f} [char/token]" , sep="\t")
 
 
 if __name__ == "__main__":

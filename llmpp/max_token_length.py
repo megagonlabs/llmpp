@@ -32,7 +32,7 @@ def main():
             local_max = []
             local_total_char = 0
             local_total_token = 0
-            if input_path.endswith(".text"):
+            if jsonl_path.endswith(".text"):
                 input_path = jsonl_path
             elif replace_system_role:
                 input_path = create_system_role_replaced_tempfiles(jsonl_path)

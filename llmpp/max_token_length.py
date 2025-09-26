@@ -57,13 +57,13 @@ def main():
                     if total_max < token_length:
                         total_max = token_length
                         total_max_path = jsonl_path
-            print(*local_max, "total_char:", local_total_char, f"{local_total_char / local_total_token:.2f} [char/token]", jsonl_path, sep="\t")
+            print(*local_max, "total_char:", local_total_char, f"{local_total_char / local_total_token:.2f}", "[char/token]", jsonl_path, sep="\t")
             total_char += local_total_char
             total_token += local_total_token
         except Exception as e:
             print("#ERR#", jsonl_path, e, sep="\t")
     print("total:", total_max, total_max_path, sep="\t")
-    print(f"{total_char} [char]", f"{total_char / total_token:.2f} [char/token]" , sep="\t")
+    print(f"{total_char}", "[char]", f"{total_char / total_token:.2f}", "[char/token]" , sep="\t")
 
 
 if __name__ == "__main__":

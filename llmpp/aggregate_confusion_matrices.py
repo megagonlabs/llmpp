@@ -43,14 +43,19 @@ def calc_stats(stats, keys=None, key_pattern=None):
     for key in gold_keys:
         recalls[key] = correct_stats.get(key, 0) / gold_stats[key] if gold_stats.get(key) else 0.
     precisions = {"*": correct_total / content_total if content_total else 0.}
+    f1s = {}
     for key in gold_keys:
         precisions[key] = correct_stats.get(key, 0) / content_stats[key] if content_stats.get(key) else 0.
+        f1s[key] = f1(recalls[key], precisions[key])
     return {
         "recall": recalls,
         "precision": precisions,
+        "f1": f1s,
     }
 
 
+def f1(r, p):
+    return 2. * r * p / (r + p) if r * p else 0.
 
 def main():
     upos_stats = {}
@@ -68,28 +73,35 @@ def main():
         with open(target_path, "r", encoding="utf8") as fin:
             result = json.load(fin)
         upos_stats[key] = calc_stats(result["confusion_upos"], keys=upos_list)
-        upos_stats[key]["recall"]["*"] = result["token"]["correct_upos"] / (result["token"]["gold"] or 1)
-        upos_stats[key]["precision"]["*"] = result["token"]["correct_upos"] / (result["token"]["content"] or 1)
+        r = upos_stats[key]["recall"]["*"] = result["token"]["correct_upos"] / (result["token"]["gold"] or 1)
+        p = upos_stats[key]["precision"]["*"] = result["token"]["correct_upos"] / (result["token"]["content"] or 1)
+        upos_stats[key]["f1"]["*"] = f1(r, p)
         deprel_stats[key] = calc_stats(result["confusion_deprel"], keys=deprel_list, key_pattern=r"^([^:]+)")
-        deprel_stats[key]["recall"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["gold"] or 1)
-        deprel_stats[key]["precision"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["content"] or 1)
-        total_stats[key] = {
-            "recall": {
-                "Aligned": result["token"]["aligned"] / (result["token"]["gold"] or 1),
-                "UAS": result["token"]["correct_head"] / (result["token"]["gold"] or 1),
-            },
-            "precision": {
-                "Aligned": result["token"]["aligned"] / (result["token"]["content"] or 1),
-                "UAS": result["token"]["correct_head"] / (result["token"]["content"] or 1),
-            },
+        r = deprel_stats[key]["recall"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["gold"] or 1)
+        p = deprel_stats[key]["precision"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["content"] or 1)
+        deprel_stats[key]["f1"]["*"] = f1(r, p)
+        total_stats[key]["recall"] = {
+            "Aligned": result["token"]["aligned"] / (result["token"]["gold"] or 1),
+            "UAS": result["token"]["correct_head"] / (result["token"]["gold"] or 1),
+        }
+        total_stats[key]["precision"] = {
+            "Aligned": result["token"]["aligned"] / (result["token"]["content"] or 1),
+            "UAS": result["token"]["correct_head"] / (result["token"]["content"] or 1),
+        }
+        total_stats[key]["f1"] ={
+            "Aligned": f1(total_stats[key]["recall"]["Aligned"], total_stats[key]["precision"]["Aligned"]),
+            "UAS": f1(total_stats[key]["recall"]["UAS"], total_stats[key]["precision"]["UAS"]),
         }
     for title, stats, metrics in [
         ["UPOS Recall", upos_stats, "recall"],
         ["UPOS Precision", upos_stats, "precision"],
+        ["UPOS F1", upos_stats, "f1"],
         ["DEPREL Recall", deprel_stats, "recall"],
         ["DEPREL Precision", deprel_stats, "precision"],
+        ["DEPREL F1", deprel_stats, "f1"],
         ["TOTAL Recall", total_stats, "recall"],
         ["TOTAL Precision", total_stats, "precision"],
+        ["TOTAL F1", total_stats, "f1"],
     ]:
         keys = sorted(stats.keys())
         labels = sorted(stats[keys[0]][metrics].keys())

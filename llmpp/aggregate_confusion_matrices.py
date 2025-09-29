@@ -80,6 +80,7 @@ def main():
         r = deprel_stats[key]["recall"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["gold"] or 1)
         p = deprel_stats[key]["precision"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["content"] or 1)
         deprel_stats[key]["f1"]["*"] = f1(r, p)
+        total_stats[key] = {}
         total_stats[key]["recall"] = {
             "Aligned": result["token"]["aligned"] / (result["token"]["gold"] or 1),
             "UAS": result["token"]["correct_head"] / (result["token"]["gold"] or 1),

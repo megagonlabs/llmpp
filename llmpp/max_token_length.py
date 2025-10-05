@@ -39,27 +39,33 @@ def main():
             else:
                 input_path = jsonl_path
             with open(input_path, "r", encoding="utf8") as fin:
-                for line_index, line in enumerate(fin.readlines(), 1):
-                    line = line.rstrip("\n")
-                    if input_path.endswith(".text"):
-                        text = line
-                        char_length = len(text)
-                        token_length = len(tokenizer.encode(text))
-                    else:
-                        prompt = json.loads(line)
-                        messages = prompt["messages"]
-                        char_length = len(tokenizer.apply_chat_template(messages, tokenize=False))
-                        token_length = len(tokenizer.apply_chat_template(messages, tokenize=True))
-                    local_total_char += char_length
-                    local_total_token += token_length
-                    if token_length <= max_length:
-                        print(line, file=sys.stderr)
-                    elif max_length > 0:
-                        print("removed line", line_index, token_length)
-                    local_max = sorted(local_max + [token_length], reverse=True)[:LOCAL_TOP_N]
-                    if total_max < token_length:
-                        total_max = token_length
-                        total_max_path = jsonl_path
+                input_lines = [_.rstrip("\n") for _ in fin.readlines()]
+            if input_path == jsonl_path:
+                jsonl_lines = input_lines
+            else:
+                with open(jsonl_path, "r", encoding="utf8") as fin:
+                    jsonl_lines = [_.rstrip("\n") for _ in fin.readlines()]
+            for line_index, line in enumerate(input_lines):
+                line = line.rstrip("\n")
+                if input_path.endswith(".text"):
+                    text = line
+                    char_length = len(text)
+                    token_length = len(tokenizer.encode(text))
+                else:
+                    prompt = json.loads(line)
+                    messages = prompt["messages"]
+                    char_length = len(tokenizer.apply_chat_template(messages, tokenize=False))
+                    token_length = len(tokenizer.apply_chat_template(messages, tokenize=True))
+                local_total_char += char_length
+                local_total_token += token_length
+                if token_length <= max_length:
+                    print(jsonl_lines[line_index], file=sys.stderr)
+                elif max_length > 0:
+                    print("removed line", line_index + 1, token_length)
+                local_max = sorted(local_max + [token_length], reverse=True)[:LOCAL_TOP_N]
+                if total_max < token_length:
+                    total_max = token_length
+                    total_max_path = jsonl_path
             print(*local_max, "local char token:", local_total_char, local_total_token, jsonl_path, sep="\t")
             total_char += local_total_char
             total_token += local_total_token

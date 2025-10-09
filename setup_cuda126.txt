@@ -1,0 +1,69 @@
+sudo apt -y update
+sudo apt -y upgrade
+sudo apt -y install build-essential libffi-dev libssl-dev zlib1g-dev liblzma-dev libbz2-dev libreadline-dev libsqlite3-dev libopencv-dev tk-dev git gcc g++ nfs-common
+
+# sshd, adduser and sudoer
+sudo nano /etc/ssh/sshd_config # "Port 3322" ""PubkeyAuthentication yes" "PasswordAuthentication no"
+sudo adduser matsuda --disabled-password
+sudo gpasswd -a matsuda sudo
+sudo visudo # add "matsuda ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers" to the bottom line
+sudo su - matsuda
+mkdir -m 700 .ssh
+nano .ssh/authorized_keys
+chmod 600 .ssh/authorized_keys
+sudo reboot
+# login as matsuda
+
+# CUDA 12.6
+curl -o cuda_12.6.run https://developer.download.nvidia.com/compute/cuda/12.6.0/local_installers/cuda_12.6.0_560.28.03_linux.run
+sudo sh cuda_12.6.run
+
+# stop updating nvidia driver
+sudo nano /etc/apt/apt.conf.d/20auto-upgrades
+APT::Periodic::Update-Package-Lists "0";
+APT::Periodic::Unattended-Upgrade "0";
+
+# mount Filestore https://cloud.google.com/filestore/docs/mounting-fileshares?hl=ja#linux:-etcfstab
+sudo mount -o rw 10.153.1.194:/llmpp /home/matsuda/llmpp
+sudo chmod 777 /home/matsuda/llmpp
+sudo chown matsuda:matsuda llmpp
+sudo nano /etc/fstab # add "10.153.1.194:/llmpp /home/matsuda/llmpp nfs default,_netdev 0 0"
+
+# pyenv
+git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+source .bashrc
+pyenv install 3.12.11
+
+# uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.bashrc
+
+# clone llmpp and build venv
+git clone -b v2 https://github.com/megagonlabs/llmpp.git
+cd llmpp
+pyenv local 3.12.11
+uv venv venv --python 3.12.11 --seed
+source venv/bin/activate
+pip install -r requirements.txt
+# for latest env
+# uv pip install -U vllm --torch-backend=cu128 --extra-index-url https://wheels.vllm.ai/nightly
+# uv pip install -U accelerate trl peft
+
+# to mount older disks
+sudo mkdir -m 777 -p /data/llmpp /data/llmpp.old
+sudo mount /dev/nvme0n2p1 /data/llmpp --types=ext4 --options=rw
+sudo mount /dev/nvme0n3p1 /data/llmpp.old --types=ext4 --options=rw
+
+# mount gcsfuse https://cloud.google.com/storage/docs/gcsfuse-install?hl=ja
+export GCSFUSE_REPO=gcsfuse-`lsb_release -c -s`
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.asc] https://packages.cloud.google.com/apt $GCSFUSE_REPO main" | sudo tee /etc/apt/sources.list.d/gcsfuse.list
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo tee /usr/share/keyrings/cloud.google.asc
+sudo apt update
+sudo apt -y install gcsfuse
+sudo mkdir -m 777 -P /gcs/llmpp
+sudo chown -R matsuda:matsuda /gcs
+id matsuda # verify uid and gid
+sudo nano /etc/fstab # add "llmpp /gcs/llmpp gcsfuse rw,_netdev,allow_other,uid=1007,gid=1007"

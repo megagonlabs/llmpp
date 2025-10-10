@@ -76,6 +76,7 @@ def execute_completions(
         logger.error(e)
         raise e
     finally:
+        logger.debug(f"saving: {output_jsonl_path}")
         with open(output_jsonl_path, "w", encoding="utf8") as fout:
             for record in records:
                 json.dump(record, fout, ensure_ascii=False)

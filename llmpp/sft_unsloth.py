@@ -97,7 +97,8 @@ def run_sft(
                 logger.info(state.log_history[-1])
 
         trainer = SFTTrainer(
-            model,
+            model=model,
+            tokenizer=tokenizer,
             train_dataset=train_dataset,
             eval_dataset=dev_dataset,
             callbacks=[_TrainerCallback()],

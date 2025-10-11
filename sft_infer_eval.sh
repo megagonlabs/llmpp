@@ -19,6 +19,7 @@ echo targets: ${targets}
 
 setup=1
 attr=""
+prev_attr=""
 for target in ${targets}
 do
   if [[ ${target} == "-" ]]; then
@@ -26,6 +27,7 @@ do
     continue
   fi
   if [[ ${target} == "--"* ]]; then
+    prev_attr=${attr}
     attr=${target}
     continue
   fi
@@ -44,19 +46,19 @@ do
   elif [[ "${attr}" == "--b" ]]; then
     batch_size="--b ${target}"
     echo batch_size=${target}
-    unset attr
+    attr=${prev_attr}
     continue
   elif [[ "${attr}" == "--lr" ]]; then
     lr="--lr ${target}"
     echo lr=${target}
     lr_suffix=-lr${target}
-    unset attr
+    attr=${prev_attr}
     continue
   elif [[ "${attr}" == "--e" ]]; then
     epoch="--e ${target}"
     echo epoch=${target}
     epoch_suffix=-epoch${target}
-    unset attr
+    attr=${prev_attr}
     continue
   else
     echo "invalid attribute ${attr}"

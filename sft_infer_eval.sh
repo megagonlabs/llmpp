@@ -38,7 +38,7 @@ do
     model=${target%/}
     echo model=${model}
   elif [[ "${attr}" == "--d" ]]; then
-    dataset=${target}
+    dataset=${target#data/}
     echo dataset=data/${dataset}
   elif [[ "${attr}" == "--t" ]]; then
     template=${target}
@@ -69,8 +69,8 @@ do
   fi
 
   peft_dir=${model}${lr_suffix}${epoch_suffix}_${dataset}_${template}.train
-  train_jsonl=data/*${dataset}*/${template}.train.jsonl
-  test_jsonl=data/*${dataset}*/${template}.test.jsonl
+  train_jsonl=data/${dataset}/${template}.train.jsonl
+  test_jsonl=data/${dataset}/${template}.test.jsonl
   set +e
   merge_lora_weights=`grep '"merge_lora_weights"' ${config}`
   set -e

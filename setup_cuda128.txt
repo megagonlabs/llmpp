@@ -14,27 +14,31 @@ chmod 600 .ssh/authorized_keys
 sudo reboot
 # login as matsuda
 
-# CUDA 12.6
-curl -o cuda_12.6.run https://developer.download.nvidia.com/compute/cuda/12.6.0/local_installers/cuda_12.6.0_560.28.03_linux.run
-sudo sh cuda_12.6.run
+# CUDA 12.8
+curl -o cuda_12.8.run https://developer.download.nvidia.com/compute/cuda/12.8.0/local_installers/cuda_12.8.0_570.86.10_linux.run
+sudo sh cuda_12.8.run
 
 # stop updating nvidia driver
 sudo nano /etc/apt/apt.conf.d/20auto-upgrades
+# set values to 0
 APT::Periodic::Update-Package-Lists "0";
 APT::Periodic::Unattended-Upgrade "0";
 
 # mount Filestore https://cloud.google.com/filestore/docs/mounting-fileshares?hl=ja#linux:-etcfstab
+mkdir -m 777 /home/matsuda/llmpp
 sudo mount -o rw 10.153.1.194:/llmpp /home/matsuda/llmpp
 sudo chmod 777 /home/matsuda/llmpp
-sudo chown matsuda:matsuda llmpp
+sudo chown matsuda:matsuda /home/matsuda/llmpp
 sudo nano /etc/fstab # add "10.153.1.194:/llmpp /home/matsuda/llmpp nfs default,_netdev 0 0"
+# Or clone repo to local disk
+# git clone -b v2 https://github.com/megagonlabs/llmpp.git
 
 # pyenv
 git clone https://github.com/pyenv/pyenv.git ~/.pyenv
 echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
 echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
 echo 'eval "$(pyenv init -)"' >> ~/.bashrc
-source .bashrc
+source ~/.bashrc
 pyenv install 3.12.11
 
 # uv
@@ -42,12 +46,12 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 source ~/.bashrc
 
 # clone llmpp and build venv
-git clone -b v2 https://github.com/megagonlabs/llmpp.git
+cd /home/matsuda/llmpp
 cd llmpp
 pyenv local 3.12.11
 uv venv venv --python 3.12.11 --seed
 source venv/bin/activate
-pip install -r requirements_cuda126.txt
+pip install -r requirements_cuda128.txt
 # for latest env
 # uv pip install -U vllm --torch-backend=cu128 --extra-index-url https://wheels.vllm.ai/nightly
 # uv pip install -U accelerate trl peft

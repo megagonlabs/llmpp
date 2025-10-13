@@ -5,7 +5,7 @@ set -eu
 LONG_NAME=$1  # like UD_Japanese-GSD
 SHORT_NAME=$2  # like ja_gsd
 REVISION=$3  # like r2.15
-if [ $# -ge 4 ] ; then
+if [[ $# -ge 4 ]] ; then
     OUTPUT_DIR=$4
 else
     LANGUAGE=${LONG_NAME#UD_}

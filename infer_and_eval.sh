@@ -24,7 +24,7 @@ else
         ${vllm_options}
 fi
 
-if [ "${target_jsonl}" == *-linearized-* ] || [ "${target_jsonl}" == *-bracketing-* ]; then
+if [[ "${target_jsonl}" == *-linearized-* ]] || [[ "${target_jsonl}" == *-bracketing-* ]]; then
   if [[ "${target_jsonl}" == *no-terminal* ]]; then
     opetion="--r --nt"
   else

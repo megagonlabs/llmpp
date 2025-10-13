@@ -76,7 +76,7 @@ do
     echo "invalid attribute ${attr}"
     exit 1
   fi
-  if [ ${setup} -eq 1 ]; then
+  if [[ ${setup} -eq 1 ]]; then
     continue
   fi
 
@@ -86,24 +86,24 @@ do
   set +e
   merge_lora_weights=`grep '"merge_lora_weights"' ${config}`
   set -e
-  if [ ${merge_lora_weights} ]; then
+  if [[ ${merge_lora_weights} ]]; then
     result_dir=${peft_dir}.merged
   else
     result_dir=${peft_dir}
   fi
 
-  if [ ${force} -eq 0 ] && [ -f ${result_dir}/${test_jsonl}/completion.jsonl ]; then
+  if [[ ${force} -eq 0 ]] && [[ -f ${result_dir}/${test_jsonl}/completion.jsonl ]]; then
     echo skip training due to existence of ${result_dir}/${test_jsonl}/completion.jsonl
     continue
   fi
 
-  if [ ${force} -eq 0 ] && [ -f ${peft_dir}/adapter_config.json ]; then
+  if [[ ${force} -eq 0 ]] && [[ -f ${peft_dir}/adapter_config.json ]]; then
     echo use existing ${peft_dir}/
   else
     python -m ${sft_method} ${batch_size} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
   fi
 
-  if [ ${merge_lora_weights} ] ; then
+  if [[ ${merge_lora_weights} ]] ; then
     python -m llmpp.merge_peft_model ${peft_dir} local/${peft_dir}.merged
     ./infer_and_eval.sh local/${peft_dir}.merged ${test_jsonl}
     rm -f local/${peft_dir}.merged/model*.safetensors local/${peft_dir}.merged/model.safetensors.index.json

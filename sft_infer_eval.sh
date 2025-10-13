@@ -43,6 +43,7 @@ do
     echo model=${model}
   elif [[ "${attr##}" == "d" ]]; then
     dataset=${target#data/}
+    dataset=${dataset%%/}
     echo dataset=data/${dataset}
   elif [[ "${attr##}" == "t" ]]; then
     template=${target}

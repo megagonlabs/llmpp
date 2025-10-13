@@ -22,44 +22,44 @@ attr=""
 prev_attr=""
 for target in ${targets}
 do
-  if [[ ${target} == "-" ]]; then
-    setup=$((1-setup))
-    continue
-  fi
   if [[ ${target} == "--"* ]]; then
     prev_attr=${attr}
-    attr=${target}
+    attr=${target#--}
+    setup=1
     continue
-  fi
-  if [[ "${attr}" == "--c" ]]; then
+  elif [[ ${target} == "-" ]]; then
+    setup=0
+  elif [[ ${target} == "-"* ]]; then
+    prev_attr=${attr}
+    attr=${target#-}
+    setup=0
+    continue
+  elif [[ "${attr}" == "c" ]]; then
     config=${target}
     echo config=${config}
-  elif [[ "${attr}" == "--m" ]]; then
+  elif [[ "${attr##}" == "m" ]]; then
     model=${target%/}
     echo model=${model}
-  elif [[ "${attr}" == "--d" ]]; then
+  elif [[ "${attr##}" == "d" ]]; then
     dataset=${target#data/}
     echo dataset=data/${dataset}
-  elif [[ "${attr}" == "--t" ]]; then
+  elif [[ "${attr##}" == "t" ]]; then
     template=${target}
     echo template=${template}
-  elif [[ "${attr}" == "--b" ]]; then
+  elif [[ "${attr}" == "b" ]]; then
     batch_size="--b ${target}"
     echo batch_size=${target}
     attr=${prev_attr}
-    continue
   elif [[ "${attr}" == "--lr" ]]; then
     lr="--lr ${target}"
     echo lr=${target}
     lr_suffix=-lr${target}
     attr=${prev_attr}
-    continue
   elif [[ "${attr}" == "--e" ]]; then
     epoch="--e ${target}"
     echo epoch=${target}
     epoch_suffix=-epoch${target}
     attr=${prev_attr}
-    continue
   else
     echo "invalid attribute ${attr}"
     exit 1

@@ -20,13 +20,13 @@ echo targets: ${targets}
 
 setup=1
 attr=""
-prev_steup=1
+prev_setup=1
 prev_attr=""
 for target in ${targets}
 do
   if [[ ${target} == "--"* ]]; then
     prev_attr=${attr}
-    prev_setup=${steup}
+    prev_setup=${setup}
     attr=${target#--}
     setup=1
     continue
@@ -34,7 +34,7 @@ do
     setup=0
   elif [[ ${target} == "-"* ]]; then
     prev_attr=${attr}
-    prev_setup=${steup}
+    prev_setup=${setup}
     attr=${target#-}
     setup=0
     continue

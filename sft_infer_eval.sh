@@ -24,7 +24,11 @@ prev_setup=1
 prev_attr=""
 for target in ${targets}
 do
-  if [[ ${target} == "--"* ]]; then
+  if [[ "${target}" == "--force" ]]; then
+    echo set force
+    force=1
+    continue
+  elif [[ ${target} == "--"* ]]; then
     prev_attr=${attr}
     prev_setup=${setup}
     attr=${target#--}
@@ -66,12 +70,6 @@ do
     epoch="--e ${target}"
     echo epoch=${target}
     epoch_suffix=-epoch${target}
-    attr=${prev_attr}
-    setup=${prev_setup}
-  elif [[ "${attr}" == "force" ]]; then
-    dataset=${target#data/}
-    echo set force
-    force=1
     attr=${prev_attr}
     setup=${prev_setup}
   else

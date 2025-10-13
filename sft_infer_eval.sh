@@ -20,11 +20,13 @@ echo targets: ${targets}
 
 setup=1
 attr=""
+prev_steup=1
 prev_attr=""
 for target in ${targets}
 do
   if [[ ${target} == "--"* ]]; then
     prev_attr=${attr}
+    prev_setup=${steup}
     attr=${target#--}
     setup=1
     continue
@@ -32,6 +34,7 @@ do
     setup=0
   elif [[ ${target} == "-"* ]]; then
     prev_attr=${attr}
+    prev_setup=${steup}
     attr=${target#-}
     setup=0
     continue
@@ -52,21 +55,25 @@ do
     batch_size="--b ${target}"
     echo batch_size=${target}
     attr=${prev_attr}
+    setup=${prev_setup}
   elif [[ "${attr}" == "lr" ]]; then
     lr="--lr ${target}"
     echo lr=${target}
     lr_suffix=-lr${target}
     attr=${prev_attr}
+    setup=${prev_setup}
   elif [[ "${attr}" == "e" ]]; then
     epoch="--e ${target}"
     echo epoch=${target}
     epoch_suffix=-epoch${target}
     attr=${prev_attr}
+    setup=${prev_setup}
   elif [[ "${attr}" == "force" ]]; then
     dataset=${target#data/}
     echo set force
     force=1
     attr=${prev_attr}
+    setup=${prev_setup}
   else
     echo "invalid attribute ${attr}"
     exit 1

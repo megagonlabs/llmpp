@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import time
 from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
@@ -51,6 +52,7 @@ def execute_completions(
     with open(output_jsonl_path, "w", encoding="utf8"):
         pass  # clear the output file for appending results
 
+    start = time.perf_counter()
     batch = []
     try:
         while True:
@@ -76,6 +78,7 @@ def execute_completions(
         logger.error(e)
         raise e
     finally:
+        logger.debug(f"inference_runtime: {time.perf_counter() - start:.03f}")
         logger.debug(f"saving: {output_jsonl_path}")
         with open(output_jsonl_path, "w", encoding="utf8") as fout:
             for record in records:

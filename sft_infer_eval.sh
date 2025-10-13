@@ -13,6 +13,7 @@ epoch=""
 epoch_suffix=""
 lr=""
 lr_suffix=""
+force=0
 
 echo sft_method: ${sft_method}
 echo targets: ${targets}
@@ -50,15 +51,20 @@ do
     batch_size="--b ${target}"
     echo batch_size=${target}
     attr=${prev_attr}
-  elif [[ "${attr}" == "--lr" ]]; then
+  elif [[ "${attr}" == "lr" ]]; then
     lr="--lr ${target}"
     echo lr=${target}
     lr_suffix=-lr${target}
     attr=${prev_attr}
-  elif [[ "${attr}" == "--e" ]]; then
+  elif [[ "${attr}" == "e" ]]; then
     epoch="--e ${target}"
     echo epoch=${target}
     epoch_suffix=-epoch${target}
+    attr=${prev_attr}
+  elif [[ "${attr}" == "force" ]]; then
+    dataset=${target#data/}
+    echo set force
+    force=1
     attr=${prev_attr}
   else
     echo "invalid attribute ${attr}"
@@ -80,12 +86,12 @@ do
     result_dir=${peft_dir}
   fi
 
-  if [ -f ${result_dir}/${test_jsonl}/completion.jsonl ]; then
+  if [ ${force} -eq 0 ] && [ -f ${result_dir}/${test_jsonl}/completion.jsonl ]; then
     echo skip training due to existence of ${result_dir}/${test_jsonl}/completion.jsonl
     continue
   fi
 
-  if [ -f ${peft_dir}/adapter_config.json ]; then
+  if [ ${force} -eq 0 ] && [ -f ${peft_dir}/adapter_config.json ]; then
     echo use existing ${peft_dir}/
   else
     python -m ${sft_method} ${batch_size} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}

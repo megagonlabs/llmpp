@@ -45,33 +45,48 @@ do
   elif [[ "${attr}" == "c" ]]; then
     config=${target}
     echo config=${config}
-  elif [[ "${attr##}" == "m" ]]; then
+  elif [[ "${attr}" == "m" ]]; then
     model=${target%/}
     echo model=${model}
-  elif [[ "${attr##}" == "d" ]]; then
+  elif [[ "${attr}" == "d" ]]; then
     dataset=${target#data/}
     dataset=${dataset%%/}
     echo dataset=data/${dataset}
-  elif [[ "${attr##}" == "t" ]]; then
+  elif [[ "${attr}" == "t" ]]; then
     template=${target}
     echo template=${template}
   elif [[ "${attr}" == "b" ]]; then
     batch_size="--b ${target}"
     echo batch_size=${target}
     attr=${prev_attr}
-    setup=${prev_setup}
+    if [[ ${setup} -eq 1 ]]; then
+      setup=${prev_setup}
+      continue
+    else
+      setup=${prev_setup}
+    fi
   elif [[ "${attr}" == "lr" ]]; then
     lr="--lr ${target}"
     echo lr=${target}
     lr_suffix=-lr${target}
     attr=${prev_attr}
-    setup=${prev_setup}
+    if [[ ${setup} -eq 1 ]]; then
+      setup=${prev_setup}
+      continue
+    else
+      setup=${prev_setup}
+    fi
   elif [[ "${attr}" == "e" ]]; then
     epoch="--e ${target}"
     echo epoch=${target}
     epoch_suffix=-epoch${target}
     attr=${prev_attr}
-    setup=${prev_setup}
+    if [[ ${setup} -eq 1 ]]; then
+      setup=${prev_setup}
+      continue
+    else
+      setup=${prev_setup}
+    fi
   else
     echo "invalid attribute ${attr}"
     exit 1

@@ -114,16 +114,18 @@ do
 
   if [[ ${force} -eq 0 ]] && [[ -f ${peft_dir}/adapter_config.json ]]; then
     echo use existing ${peft_dir}/
-  else
+  elif [[ ${batch_size} == "" ]]; then
+    python -m ${sft_method} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
+  else  # recovering from CUDA OOM
     set +e
     for ((bs = ${batch_size#--b }; bs >= 1; bs--)); do
-      if [[ ${bs} < ${batch_size} ]]; then
+      if [[ ${bs} -lt ${batch_size} ]]; then
         echo retrying with setting batch_size=${bs} ...
       fi
-      if [[ ${bs}==1 ]]; then
+      if [[ ${bs} -eq 1 ]]; then
         set -e
       fi
-      python -m ${sft_method} ${bs} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
+      python -m ${sft_method} --b ${bs} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
       if [[ $? -eq 0 ]]; then
         set -e
         break

@@ -116,7 +116,7 @@ do
     echo use existing ${peft_dir}/
   else
     set +e
-    for ((bs=batch_size; bs>=1; bs--)); do
+    for ((bs = batch_size; bs >= 1; bs--)); do
       if [[ ${bs} < ${batch_size} ]]; then
         echo retrying with setting batch_size=${bs} ...
       fi

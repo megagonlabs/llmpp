@@ -118,8 +118,9 @@ do
     python -m ${sft_method} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
   else  # recovering from CUDA OOM
     set +e
-    for ((bs = ${batch_size#--b }; bs >= 1; bs--)); do
-      if [[ ${bs} -lt ${batch_size} ]]; then
+    bs_origin=${batch_size#--b }
+    for ((bs = ${bs_origin}; bs >= 1; bs--)); do
+      if [[ ${bs} -lt ${bs_origin} ]]; then
         echo retrying with setting batch_size=${bs} ...
       fi
       if [[ ${bs} -eq 1 ]]; then

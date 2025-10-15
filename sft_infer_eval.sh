@@ -119,6 +119,7 @@ do
     for ((bs=batch_size; bs>=1; bs--)); do
       if [[ ${bs} < ${batch_size} ]]; then
         echo retrying with setting batch_size=${bs} ...
+      fi
       if [[ ${bs}==1 ]]; then
         set -e
       fi

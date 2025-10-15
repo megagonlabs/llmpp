@@ -49,38 +49,35 @@ def execute_completions(
     with open(input_jsonl_path, "r", encoding="utf8") as fin:
         records = [json.loads(_) for _ in fin]
     logger.debug(f"output file: {output_jsonl_path}")
-    with open(output_jsonl_path, "w", encoding="utf8"):
-        pass  # clear the output file for appending results
-
-    start = time.perf_counter()
-    batch = []
-    try:
-        while True:
-            completed_all = True
-            prev = 0
-            for line_index, record in enumerate(records, 1):
-                messages = record["messages"]
-                for chat_index, m in enumerate(messages):
-                    if m["role"] == "assistant" and "gold" not in m and "error" not in m:
-                        batch.append([line_index, chat_index, messages])
-                        completed_all = False
-                        if prev + 1 < line_index:
-                            logger.debug(f"skipping lines #{prev + 1} to #{line_index - 1}")
-                        prev = line_index
-                        break
-                if len(batch) == batch_size or (batch and line_index == len(records)):
-                    completion_func(batch, chat_index, logger=logger)
-                    batch.clear()
-            assert not batch
-            if completed_all:
-                break
-    except Exception as e:
-        logger.error(e)
-        raise e
-    finally:
-        logger.debug(f"inference_runtime: {time.perf_counter() - start:.03f}")
-        logger.debug(f"saving: {output_jsonl_path}")
-        with open(output_jsonl_path, "w", encoding="utf8") as fout:
+    with open(output_jsonl_path, "w", encoding="utf8") as fout:
+        start = time.perf_counter()
+        batch = []
+        try:
+            while True:
+                completed_all = True
+                prev = 0
+                for line_index, record in enumerate(records, 1):
+                    messages = record["messages"]
+                    for chat_index, m in enumerate(messages):
+                        if m["role"] == "assistant" and "gold" not in m and "error" not in m:
+                            batch.append([line_index, chat_index, messages])
+                            completed_all = False
+                            if prev + 1 < line_index:
+                                logger.debug(f"skipping lines #{prev + 1} to #{line_index - 1}")
+                            prev = line_index
+                            break
+                    if len(batch) == batch_size or (batch and line_index == len(records)):
+                        completion_func(batch, chat_index, logger=logger)
+                        batch.clear()
+                assert not batch
+                if completed_all:
+                    break
+        except Exception as e:
+            logger.error(e)
+            raise e
+        finally:
+            logger.debug(f"inference_runtime: {time.perf_counter() - start:.03f}")
+            logger.debug(f"saving: {output_jsonl_path}")
             for record in records:
                 json.dump(record, fout, ensure_ascii=False)
                 print(file=fout)

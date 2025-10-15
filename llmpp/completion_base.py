@@ -28,10 +28,11 @@ def parse_args(parser: ArgumentParser = None, default_output_dir_func = lambda m
             output_dir = args.output_dir
         else:
             output_dir = default_output_dir_func(args.model_name, args.input_jsonl)
-        if os.path.exists(output_dir):
-            shutil.move(output_dir, output_dir.rstrip("/") + "_" + datetime.fromtimestamp(os.path.getmtime(output_dir)).strftime("%Y%m%d-%H%M%S"))
-        os.makedirs(output_dir)
         args.output_jsonl = f"{output_dir}/completion.jsonl"
+        if os.path.exists(output_dir):
+            if os.path.exists(args.output_jsonl) and os.path.getsize(args.output_jsonl) > 0:
+                shutil.move(output_dir, output_dir.rstrip("/") + "_" + datetime.fromtimestamp(os.path.getmtime(output_dir)).strftime("%Y%m%d-%H%M%S"))
+        os.makedirs(output_dir, exist_ok=True)
     return args
 
 

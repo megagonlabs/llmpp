@@ -91,9 +91,12 @@ def run_sft(config, prepare_model_func):
     is_rank0 = os.getenv("LOCAL_RANK", "0") == "0"
     output_dir = config["sft_config_args"]["output_dir"]
     if is_rank0:
-        if os.path.exists(output_dir):
+        if os.path.exists(output_dir) and (
+            os.path.exists(f"{output_dir}/config.json") or
+            os.path.exists(f"{output_dir}/adapter_config.json")
+        ):
             shutil.move(output_dir, output_dir.rstrip("/") + "_" + datetime.fromtimestamp(os.path.getmtime(output_dir)).strftime("%Y%m%d-%H%M%S"))
-        os.makedirs(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
     log_file_path = f"{output_dir}/sft.log"
     logger = create_logger(log_file_path=log_file_path, is_dummy=not is_rank0)
     logger.debug(f"\n{json.dumps(config, ensure_ascii=True, indent=1)}")

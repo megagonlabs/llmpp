@@ -115,7 +115,19 @@ do
   if [[ ${force} -eq 0 ]] && [[ -f ${peft_dir}/adapter_config.json ]]; then
     echo use existing ${peft_dir}/
   else
-    python -m ${sft_method} ${batch_size} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
+    set +e
+    for ((bs=batch_size; bs>=1; bs--)); do
+      if [[ ${bs} < ${batch_size} ]]; then
+        echo retrying with setting batch_size=${bs} ...
+      if [[ ${bs}==1 ]]; then
+        set -e
+      fi
+      python -m ${sft_method} ${bs} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
+      if [[ $? -eq 0 ]]; then
+        set -e
+        break
+      fi
+    done
   fi
 
   if [[ ${merge_lora_weights} ]] ; then

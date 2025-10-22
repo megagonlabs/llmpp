@@ -33,6 +33,7 @@ do
     prev_setup=${setup}
     attr=${target#--}
     setup=1
+    bs=${bs_origin}
     continue
   elif [[ ${target} == "-" ]]; then
     setup=0
@@ -41,6 +42,7 @@ do
     prev_setup=${setup}
     attr=${target#-}
     setup=0
+    bs=${bs_origin}
     continue
   elif [[ "${attr}" == "c" ]]; then
     config=${target}
@@ -57,6 +59,8 @@ do
     echo template=${template}
   elif [[ "${attr}" == "b" ]]; then
     batch_size="--b ${target}"
+    bs_origin=${batch_size#--b }
+    bs=${bs_origin}
     echo batch_size=${target}
     attr=${prev_attr}
     if [[ ${setup} -eq 1 ]]; then
@@ -118,11 +122,7 @@ do
     python -m ${sft_method} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
   else  # recovering from CUDA OOM
     set +e
-    bs_origin=${batch_size#--b }
-    for ((bs = ${bs_origin}; bs >= 1; bs--)); do
-      if [[ ${bs} -lt ${bs_origin} ]]; then
-        echo retrying with setting batch_size=${bs} ...
-      fi
+    for (( ; bs >= 1; bs--)); do
       if [[ ${bs} -eq 1 ]]; then
         set -e
       fi
@@ -131,6 +131,7 @@ do
         set -e
         break
       fi
+      echo retrying with reduced batch_size ...
     done
   fi
 

@@ -10,7 +10,7 @@ if [[ $# -ge 4 ]] ; then
 else
     LANGUAGE=${LONG_NAME#UD_}
     LANGUAGE=${LANGUAGE%-*}
-    OUTPUT_DIR=./data/${LANGUAGE}:${SHORT_NAME}-${REVISION}
+    OUTPUT_DIR=./data/${LANGUAGE}@${SHORT_NAME}-${REVISION}
 fi
 
 mkdir -p ${OUTPUT_DIR}

@@ -8,7 +8,7 @@ config=""
 model=""
 dataset=""
 template=""
-batch_size=""
+batch_size=0
 epoch=""
 epoch_suffix=""
 lr=""
@@ -33,7 +33,7 @@ do
     prev_setup=${setup}
     attr=${target#--}
     setup=1
-    bs=${bs_origin}
+    bs=${batch_size}
     continue
   elif [[ ${target} == "-" ]]; then
     setup=0
@@ -42,7 +42,7 @@ do
     prev_setup=${setup}
     attr=${target#-}
     setup=0
-    bs=${bs_origin}
+    bs=${batch_size}
     continue
   elif [[ "${attr}" == "c" ]]; then
     config=${target}
@@ -58,10 +58,9 @@ do
     template=${target}
     echo template=${template}
   elif [[ "${attr}" == "b" ]]; then
-    batch_size="--b ${target}"
-    bs_origin=${batch_size#--b }
-    bs=${bs_origin}
-    echo batch_size=${target}
+    batch_size=${target}
+    bs=${batch_size}
+    echo batch_size=${batch_size}
     attr=${prev_attr}
     if [[ ${setup} -eq 1 ]]; then
       setup=${prev_setup}
@@ -118,9 +117,9 @@ do
 
   if [[ ${force} -eq 0 ]] && [[ -f ${peft_dir}/adapter_config.json ]]; then
     echo use existing ${peft_dir}/
-  elif [[ ${batch_size} == "" ]]; then
+  elif [[ ${batch_size} == "0" ]]; then
     python -m ${sft_method} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
-  else  # recovering from CUDA OOM
+  else  # recovering for CUDA OOM
     set +e
     for (( ; bs >= 1; bs--)); do
       if [[ ${bs} -eq 1 ]]; then

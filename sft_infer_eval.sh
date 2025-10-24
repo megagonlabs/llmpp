@@ -14,6 +14,7 @@ epoch_suffix=""
 lr=""
 lr_suffix=""
 force=0
+add_datetime_suffix=0
 
 echo sft_method: ${sft_method}
 echo targets: ${targets}
@@ -27,6 +28,10 @@ do
   if [[ "${target}" == "--force" ]]; then
     echo set force
     force=1
+    continue
+  elif [[ "${target}" == "--datetime" ]]; then
+    echo set add_date_time_suffix
+    add_datetime_suffix=1
     continue
   elif [[ ${target} == "--"* ]]; then
     prev_attr=${attr}
@@ -99,6 +104,9 @@ do
   fi
 
   peft_dir=${model}${lr_suffix}${epoch_suffix}_${dataset}_${template}.train
+  if [[ ${add_datetime_suffix} -eq 1]]; then
+    peft_dir=${peft_dir}_`date +"%Y%m%d-%H%M%S"`
+  fi
   train_jsonl=data/${dataset}/${template}.train.jsonl
   test_jsonl=data/${dataset}/${template}.test.jsonl
   set +e

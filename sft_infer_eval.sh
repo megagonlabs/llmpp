@@ -104,7 +104,7 @@ do
   fi
 
   peft_dir=${model}${lr_suffix}${epoch_suffix}_${dataset}_${template}.train
-  if [[ ${add_datetime_suffix} -eq 1]]; then
+  if [[ ${add_datetime_suffix} -eq 1 ]]; then
     peft_dir=${peft_dir}_`date +"%Y%m%d-%H%M%S"`
   fi
   train_jsonl=data/${dataset}/${template}.train.jsonl

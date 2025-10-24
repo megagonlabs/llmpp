@@ -65,12 +65,7 @@ def main():
         max_lora_rank=args.max_lora_rank,
         load_format=args.load_format,
     )
-    if hasattr(llm.llm_engine.tokenizer, "tokenizer"):
-        tokenizer = llm.llm_engine.tokenizer.tokenizer
-    elif hasattr(llm.llm_engine.tokenizer, "_tokenizer"):
-        tokenizer = llm.llm_engine.tokenizer._tokenizer
-    else:
-        assert False, "tokenizer attribute changed in llm_engine.tokenizer"
+    tokenizer = llm.get_tokenizer()
     if args.chat_template_truncate_pattern:
         tokenizer.chat_template = re.sub(args.chat_template_truncate_pattern, "", tokenizer.chat_template)
 

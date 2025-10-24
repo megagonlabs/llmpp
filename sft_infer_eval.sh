@@ -126,7 +126,7 @@ do
   if [[ ${force} -eq 0 ]] && [[ -f ${peft_dir}/adapter_config.json ]]; then
     echo use existing ${peft_dir}/
   elif [[ ${batch_size} == "0" ]]; then
-    python -m ${sft_method} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
+    python -m ${sft_method} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl} --o ${peft_dir}
   else  # recovering for CUDA OOM
     set +e
     for (( ; bs >= 1; bs--)); do

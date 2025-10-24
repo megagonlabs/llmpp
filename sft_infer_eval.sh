@@ -133,7 +133,7 @@ do
       if [[ ${bs} -eq 1 ]]; then
         set -e
       fi
-      python -m ${sft_method} --b ${bs} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl}
+      python -m ${sft_method} --b ${bs} ${lr} ${epoch} --c ${config} --m ${model} --t ${train_jsonl} --o ${peft_dir}
       if [[ $? -eq 0 ]]; then
         set -e
         break

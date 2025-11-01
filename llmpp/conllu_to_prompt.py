@@ -163,7 +163,7 @@ CONLLU_TOKEN_PATTERN = re.compile(
     r"^([1-9][0-9]*)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([0-9]*)\t([^\t]+)\t([^\t]+)\t([^\t]*)$"
 )
 CONLLU_TOKEN_SKIP_PATTERN = re.compile(
-    r"^(([1-9][0-9]*[\-.][1-9][0-9]*)\t|# (sent_id =|text_en =|text_ortho =|translit =|source =|generator =|udpipe_model =|note =|auto =|ToDoOrigText =|ToDoOrigtext =|spelling =|genre =|orig_file_sentence|duplicate:|layer=|citation_text=|citation_chapter=) ).+$|^#$|^0(.+)$|^# Tectogrammatical annotation available(.+)$"
+    r"^(([1-9][0-9]*[\-.][1-9][0-9]*)\t|# (sent_id =|text_en =|text_ortho =|translit =|source =|generator =|udpipe_model =|note =|auto =|ToDoOrigText =|ToDoOrigtext =|spelling =|genre =|orig_file_sentence|duplicate:) ).+$|^#$|^0(.+)$|^# Tectogrammatical annotation available(.+)$|^# (layer=|citation_text=|citation_chapter=).+$"
 )
 CONLLU_BUNSETU_PATTERN = re.compile(r"BunsetuBILabel=(.)")
 

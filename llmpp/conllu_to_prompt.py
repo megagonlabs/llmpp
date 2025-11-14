@@ -125,6 +125,7 @@ def main():
                                 ["SENTENCE", s["sentence"]],
                                 ["TOKEN_NUM", len(s["tokens"])],
                                 ["TOKEN_TSV", tokens],
+                                ["TOKEN_TSV_DESC", reversed(tokens)],
                                 ["MASKED_TOKEN_INDEXES", ", ".join(str(_ + 1) for _ in masked_token_indexes)],
                                 ["MASKED_TOKEN_TSV", masked_tokens],
                                 ["PREFILLED_TOKEN_INDEXES", ", ".join(str(_ + 1) for _ in prefilled_token_indexes)],

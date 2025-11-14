@@ -93,12 +93,12 @@ def select_last_bracketing_line(content: str) -> str | None:
         return ""
 
 
-def select_last_tsv_part(content: str, ensure_tsv: bool = False) -> list[list[str]]:
+def select_last_tsv_part(content: str, ensure_tsv: bool = False, min_columns: int = 3) -> list[list[str]]:
     rows = [line.split("\t") for line in content.split("\n")]
     begin_of_tsv = end_of_tsv = None
     exited = False
     for _, r in enumerate(rows):
-        if len(r) == 1:
+        if len(r) < min_columns:
             if r[0]:
                 exited = True
         elif exited or begin_of_tsv is None:

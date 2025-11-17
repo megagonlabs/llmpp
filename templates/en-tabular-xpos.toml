@@ -1,0 +1,22 @@
+add_whitespace = "after"
+
+[[message_template]]
+role = "system"
+content = """
+You are a linguist and specialize in tokenization based on Universal Dependencies."""
+
+[[message_template]]
+role = "user"
+content = """
+We will now perform tokenization and part-of-speech tagging on <<<LANGUAGE>>> sentence.
+Split the input sentence into words and part-of-speech tags with indexes in TSV format.
+
+input sentence:
+<<<SENTENCE>>>
+"""
+
+[[message_template]]
+role = "assistant"
+content = """
+<<<TOKEN_TSV:INDEX_ORTHWS_XPOS>>>
+"""

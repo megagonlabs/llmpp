@@ -1,0 +1,29 @@
+add_whitespace = "after"
+
+[[message_template]]
+role = "system"
+content = """
+You are a linguist and specialize in dependency parsing based on Universal Dependencies."""
+
+[[message_template]]
+role = "user"
+content = """
+We will now perform dependency parsing on <<<LANGUAGE>>> sentence.
+After splitting the input sentence into words with indexes, create a TSV with four fields: word index from 1 to <<<TOKEN_NUM>>> + part of speech + the dependent word index + the Universal Dependencies relation.
+However, for the word that is the main predicate of the sentence, the dependent word index should be 0.
+
+input sentence:
+<<<SENTENCE>>>
+"""
+
+[[message_template]]
+role = "assistant"
+content = """
+indexes and words:
+
+<<<TOKEN_TSV:INDEX_ORTHWS_XPOS>>>
+
+result:
+
+<<<TOKEN_TSV:INDEX_POS_HEAD_LABEL>>>
+"""

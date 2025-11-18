@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import IO
 
 from .convert_bracket_to_table import bracket_to_table
-from .utils import select_last_bracketing_line, select_last_tsv_part
+from .utils import select_last_bracketing_line, select_tsv_part
 
 
 def parse_args() -> Namespace:
@@ -312,10 +312,10 @@ def eval(
 
 
 def parse_records(content: str, index_field: int, stop_on_error: bool = False) -> list[dict]:
-    rows = select_last_tsv_part(content)
-    field_num = len(rows[0])
-    if field_num < 3:
+    rows = select_tsv_part(content, min_columns=3)
+    if not rows:
         return []
+    field_num = len(rows[0])
     form_field = 1 - index_field
     f2_isdigit = rows[0][2].isdigit()
     f4_isdigit = rows[0][4].isdigit() if len(rows[0]) > 4 else False

@@ -93,26 +93,23 @@ def select_last_bracketing_line(content: str) -> str | None:
         return ""
 
 
-def select_last_tsv_part(content: str, ensure_tsv: bool = False, min_columns: int = 3) -> list[list[str]]:
+def select_tsv_part(content: str, tsv_index: int = -1, min_columns: int = 3) -> list[list[str]]:
     rows = [line.split("\t") for line in content.split("\n")]
-    begin_of_tsv = end_of_tsv = None
-    exited = False
+    begin_of_tsv = None
+    tsv_parts = []
     for _, r in enumerate(rows):
         if len(r) < min_columns:
-            if r[0]:
-                exited = True
-        elif exited or begin_of_tsv is None:
+            if begin_of_tsv is not None:
+                tsv_parts.append(rows[begin_of_tsv:_])
+                begin_of_tsv = None
+        elif begin_of_tsv is None:
             begin_of_tsv = _
-            end_of_tsv = _ + 1
-            exited = False
-        else:
-            end_of_tsv = _ + 1
     if begin_of_tsv is not None:
-        return rows[begin_of_tsv:end_of_tsv]
-    elif ensure_tsv:
-        return None
+        tsv_parts.append(rows[begin_of_tsv:])
+    if 0 <= tsv_index < len(tsv_parts) or -len(tsv_parts) <= tsv_index < 0:
+        return tsv_parts[tsv_index]
     else:
-        return rows
+        return None
 
 
 def list_tsv_blocks(messages: list[dict[str, str]], target_field: str, use_first_user_turn: bool = True):
@@ -120,7 +117,7 @@ def list_tsv_blocks(messages: list[dict[str, str]], target_field: str, use_first
     first_user_turn = use_first_user_turn
     for message in messages:
         if first_user_turn and message["role"] == "user":
-            tsv_block = select_last_tsv_part(message["content"], ensure_tsv=True)
+            tsv_block = select_tsv_part(message["content"])
             if tsv_block:
                 tsv_blocks.append(tsv_block)
             first_user_turn = False

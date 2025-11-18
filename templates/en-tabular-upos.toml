@@ -8,8 +8,8 @@ You are a linguist and specialize in tokenization based on Universal Dependencie
 [[message_template]]
 role = "user"
 content = """
-We will now perform tokenization on <<<LANGUAGE>>> sentence.
-Split the input sentence into words with the word indexes from 1 in TSV format.
+We will now perform tokenization and part-of-speech tagging on <<<LANGUAGE>>> sentence.
+Split the input sentence into words with the word indexes from 1 in TSV format, and add the fields of UPOS.
 
 input sentence:
 <<<SENTENCE>>>
@@ -18,5 +18,5 @@ input sentence:
 [[message_template]]
 role = "assistant"
 content = """
-<<<TOKEN_TSV:INDEX_ORTHWS>>>
+<<<TOKEN_TSV:INDEX_ORTHWS_UPOS>>>
 """

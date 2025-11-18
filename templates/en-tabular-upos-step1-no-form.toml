@@ -21,9 +21,9 @@ role = "assistant"
 content = """
 indexes and words:
 
-<<<TOKEN_TSV:INDEX_ORTHWS>>>
+<<<TOKEN_TSV:INDEX_ORTHWS_UPOS>>>
 
 result:
 
-<<<TOKEN_TSV:INDEX_POS_HEAD_LABEL>>>
+<<<TOKEN_TSV:INDEX_UPOS_HEAD_LABEL>>>
 """

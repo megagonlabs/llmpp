@@ -9,7 +9,7 @@ You are a linguist and specialize in tokenization based on Universal Dependencie
 role = "user"
 content = """
 We will now perform tokenization and part-of-speech tagging on <<<LANGUAGE>>> sentence.
-Split the input sentence into words with the word indexes from 1 in TSV format, and add the fields of part-of-speech tag.
+Split the input sentence into words with the word indexes from 1 in TSV format, and add a field of part-of-speech tag.
 
 input sentence:
 <<<SENTENCE>>>

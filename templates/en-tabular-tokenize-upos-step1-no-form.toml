@@ -9,7 +9,10 @@ You are a linguist and specialize in dependency parsing based on Universal Depen
 role = "user"
 content = """
 We will now perform dependency parsing on <<<LANGUAGE>>> sentence.
-After splitting the input sentence into words with the word indexes from 1 in TSV format, create a new TSV with four fields: word index + part of speech + the dependent word index + the Universal Dependencies relation.
+
+First, as tokenization, split the input sentence into words with the word indexes from 1 in TSV format, and add the fields of UPOS.
+
+Then, as dependency parsing, create a new TSV with four fields: word index + UPOS + the dependent word index + the Universal Dependencies relation.
 However, for the word that is the main predicate of the sentence, the dependent word index should be 0.
 
 input sentence:
@@ -19,11 +22,11 @@ input sentence:
 [[message_template]]
 role = "assistant"
 content = """
-indexes and words:
+tokenization:
 
 <<<TOKEN_TSV:INDEX_ORTHWS_UPOS>>>
 
-result:
+dependency parsing:
 
 <<<TOKEN_TSV:INDEX_UPOS_HEAD_LABEL>>>
 """

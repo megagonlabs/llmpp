@@ -5,8 +5,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import IO
 
-from .convert_bracket_to_table import bracket_to_table
-from .utils import select_last_bracketing_line, select_tsv_part
+from .utils import select_tsv_part
 
 
 REPORTING_FIELDS = {

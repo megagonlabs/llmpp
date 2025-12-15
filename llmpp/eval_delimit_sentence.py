@@ -29,7 +29,7 @@ def main():
             base_path = Path(completion_results_jsonl)
             output_eval_json_path = f"{base_path.parent}/{base_path.stem}.sentence.json"
             with open(completion_results_jsonl, "r", encoding="utf8") as fin:
-                completion_results = [m for m in [json.loads(_)["messages"] for _ in fin] if task_regexp.search(m[-2])]
+                completion_results = [m for m in [json.loads(_)["messages"] for _ in fin] if task_regexp.search(m[-2]["content"])]
             stats = eval(completion_results, top_on_error=args.stop_on_error)
             with open(output_eval_json_path, "w", encoding="utf8") as f_eval:
                 json.dump(stats, f_eval, ensure_ascii=False, indent=1)

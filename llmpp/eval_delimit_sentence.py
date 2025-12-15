@@ -57,8 +57,8 @@ def eval(
     for line_index, messages in enumerate(completion_results, 1):
         result = messages[-1]
         assert "gold" in result, f"Inference result not saved in line #{line_index}"
-        gold_lang, gold_sentences = parse_records(result["gold"], stop_on_error)
-        content_lang, content_sentences = parse_records(result["content"], stop_on_error)
+        gold_lang, gold_sentences = parse_records(result["gold"])
+        content_lang, content_sentences = parse_records(result["content"])
         gold_lang_count += 1
         if content_lang:
             content_lang_count += 1
@@ -79,10 +79,10 @@ def eval(
                 break
     def f1(m: int, g: int, c: int) -> float:
         return 2. / (g / m + c / m) if m > 0 else 0.
-    correct_s = f1(correct_sentence_count, gold_sentence_count, content_sentence_count)
-    correct_l = f1(correct_lang_count, gold_lang_count, content_lang_count)
+    correct_sent = f1(correct_sentence_count, gold_sentence_count, content_sentence_count)
+    correct_lang = f1(correct_lang_count, gold_lang_count, content_lang_count)
     return {
-        "digest": f"{correct_s=:.4f}, {correct_l=:.4f}",
+        "digest": f"{correct_sent=:.4f}, {correct_lang=:.4f}",
         "sentence": {
             "gold": gold_sentence_count,
             "content": content_sentence_count,
@@ -97,16 +97,17 @@ def eval(
     }
 
 
-def parse_records(content: str, stop_on_error: bool = False) -> tuple[str, list[str]]:
-    lang = ""
+def parse_records(content: str) -> tuple[str, list[str]]:
+    lang = None
     sentences = []
-    try:
-        lines = [_.strip() for _ in content.split("\n") if _.strip()]
-        lang = lines[0]
-        sentences = lines[1:]
-    except Exception as e:
-        if stop_on_error:
-            raise e
+    for _ in content.split("\n"):
+        _ = _.strip()
+        if lang is None and _:
+            lang = _
+            continue
+        if sentences and not _:
+            break
+        sentences.append(_)
     return lang, sentences
 
 

@@ -22,7 +22,6 @@ def parse_args() -> Namespace:
 def main():
     args = parse_args()
     for completion_results_jsonl in args.completion_results_jsonl_files:
-        print(completion_results_jsonl)
         try:
             base_path = Path(completion_results_jsonl)
             output_eval_json_path = f"{base_path.parent}/{base_path.stem}.sentence.json"
@@ -32,8 +31,8 @@ def main():
             with open(output_eval_json_path, "w", encoding="utf8") as f_eval:
                 json.dump(stats, f_eval, ensure_ascii=False, indent=1)
                 print(file=f_eval)
-            print(stats["digest"])
             print(completion_results_jsonl, *[stats[u][k] for u in REPORTING_FIELDS for k in REPORTING_FIELDS[u]], sep="\t")
+            print(stats["digest"])
         except Exception as e:
             if args.stop_on_error:
                 raise e

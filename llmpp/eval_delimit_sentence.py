@@ -16,7 +16,6 @@ def parse_args() -> Namespace:
     parser: ArgumentParser = ArgumentParser()
     parser.add_argument("completion_results_jsonl_files", nargs="+")
     parser.add_argument("--task_regexp", "--t", default=r"sentence delimitation")
-    parser.add_argument("--stop_on_error", "--e", action="store_true")
     args = parser.parse_args()
     return args
 
@@ -30,7 +29,7 @@ def main():
             output_eval_json_path = f"{base_path.parent}/{base_path.stem}.sentence.json"
             with open(completion_results_jsonl, "r", encoding="utf8") as fin:
                 completion_results = [m for m in [json.loads(_)["messages"] for _ in fin] if task_regexp.search(m[-2]["content"])]
-            stats = eval(completion_results, top_on_error=args.stop_on_error)
+            stats = eval(completion_results)
             with open(output_eval_json_path, "w", encoding="utf8") as f_eval:
                 json.dump(stats, f_eval, ensure_ascii=False, indent=1)
                 print(file=f_eval)
@@ -46,7 +45,6 @@ def main():
 
 def eval(
     completion_results: list[dict],
-    stop_on_error: bool = False,
 ) -> dict:
     gold_lang_count = 0
     content_lang_count = 0

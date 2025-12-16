@@ -99,34 +99,33 @@ def eval(
 
 
 def parse_records(content: str) -> tuple[str, list[str]]:
-    lang = None
-    mode = None
+    lines = content.split("\n")
+    l0 = lines[0]
+    if not l0 or "\t" in l0 or l0.startswith("- Task") or lines[1] or not lines[2]:
+        return None, []  # no delimiting task there
+    lang = l0
+    mode = "token" if "\t" in lines[2] else "sentence"
     sentences = []
     sentence = ""
-    for _ in content.split("\n"):
-        _ = _.strip()
-        if lang is None and _:
-            lang = _
-            continue
-        if mode is None:
-            if not _:
-                continue
-            elif "\t" in _:
-                mode = "token"
-            else:
-                mode = "sentence"
+    for _ in lines[2:]:
         if mode == "sentence":
             if _:
                 sentences.append(_)
+            else:
+                break
         elif mode == "token":
-            if _:
+            if "\t" in _:
                 sentence += _.split("\t")[1]
             else:
                 if sentence:
                     sentences.append(sentence)
-                sentence = ""
+                    sentence = ""
+                    if _:
+                        assert False, f"invalid sequence: {_}"
+                else:
+                    break
         else:
-            assert False, f"invalid {mode=}"
+            assert False, f"invalid mode: {mode}"
     if sentence:
         sentences.append(sentence)
     return lang, sentences

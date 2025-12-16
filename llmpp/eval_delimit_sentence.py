@@ -105,7 +105,7 @@ def parse_records(content: str) -> tuple[str, list[str]]:
         if lang is None and _:
             lang = _
             continue
-        if sentences and not _:
+        if "\t" in _ or sentences and not _:
             break
         sentences.append(_)
     return lang, sentences

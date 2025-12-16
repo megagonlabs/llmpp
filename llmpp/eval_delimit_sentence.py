@@ -15,6 +15,7 @@ REPORTING_FIELDS = {
 def parse_args() -> Namespace:
     parser: ArgumentParser = ArgumentParser()
     parser.add_argument("completion_results_jsonl_files", nargs="+")
+    parser.add_argument("--stop_on_error", "--e", action="store_true")
     parser.add_argument("--task_regexp", "--t", default=r"sentence delimitation")
     args = parser.parse_args()
     return args

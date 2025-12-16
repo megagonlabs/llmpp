@@ -37,10 +37,10 @@ def main():
             print(completion_results_jsonl, *[stats[u][k] for u in REPORTING_FIELDS for k in REPORTING_FIELDS[u]], sep="\t")
             print(stats["digest"])
         except Exception as e:
+            print("skipping", completion_results_jsonl)
             if args.stop_on_error:
                 raise e
             print(e, file=sys.stderr)
-            print("skipping", completion_results_jsonl)
         print()
 
 

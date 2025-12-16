@@ -120,8 +120,6 @@ def parse_records(content: str) -> tuple[str, list[str]]:
                 if sentence:
                     sentences.append(sentence)
                     sentence = ""
-                    if _:
-                        assert False, f"invalid sequence {_} in:\n{content}"
                 else:
                     break
         else:

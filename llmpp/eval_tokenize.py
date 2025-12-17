@@ -70,82 +70,83 @@ def eval(
         result = messages[-1]
         gold_sentence += 1
         assert "gold" in result, f"Inference result not saved in line #{line_index}"
-        gold = parse_records(result["gold"], stop_on_error)
-        content = parse_records(result["content"], stop_on_error)
+        gold_list = parse_records(result["gold"], stop_on_error)
+        content_list = parse_records(result["content"], stop_on_error)
 
-        gold_forms = " ".join(_["form"] for _ in gold)
-        content_forms = " ".join(_["form"] for _ in content)
-        if gold_forms == content_forms:
-            if f_report:
-                print("=", gold_forms, file=f_report)
-        else:
-            print("<", gold_forms, file=f_report)
-            print(">", content_forms, file=f_report)
-            content = _recover_content(gold, content)
-            recovered_forms = " ".join(_["form"] for _ in content)
-            if recovered_forms != content_forms:
-                print(":", recovered_forms, file=f_report)
-        gold_token += len(gold)
-        content_token += len(content)
-
-        index_recoveries = []
-        for index, c in enumerate(content, 1):
-            if c["index"] != index:
-                index_recoveries.append(f'index recovery: {c["index"]} -> {index}')
-                c["index"] = index
-                recovered_index_token += 1
-        if index_recoveries:
-            recovered_index_sentence += 1
-            if f_report:
-                print(*index_recoveries, sep="\n", file=f_report)
-
-        align_errors = []
-        offset_g = offset_c = 0
-        index_g = index_c = 0
-        correct_pos1 = correct_pos2 = 0
-        while index_g < len(gold) and index_c < len(content):
-            g = gold[index_g]
-            c = content[index_c]
-            end_g = offset_g + len(g["form"])
-            end_c = offset_c + len(c["form"])
-            if offset_g == offset_c and end_g == end_c:
-                aligned_token += 1
-                if g["pos1"]:
-                    if g["pos1"] == c["pos1"]:
-                        correct_pos1 += 1
-                    else:
-                        confusion_pos1[g["pos1"]][c["pos1"]] += 1
-                if g["pos2"]:
-                    if g["pos2"] == c["pos2"]:
-                        correct_pos2 += 1
-                    else:
-                        confusion_pos2[g["pos2"]][c["pos2"]] += 1
+        for gold, content in zip(gold_list, content_list):
+            gold_forms = " ".join(_["form"] for _ in gold)
+            content_forms = " ".join(_["form"] for _ in content)
+            if gold_forms == content_forms:
+                if f_report:
+                    print("=", gold_forms, file=f_report)
             else:
-                align_errors.append(
-                    f'align error: {c["index"]}, {json.dumps(c["form"], ensure_ascii=False)} -> {json.dumps(g["form"], ensure_ascii=False)}')
-                if g["pos1"]:
-                    confusion_pos1[g["pos1"]][None] += 1
-                if g["pos2"]:
-                    confusion_pos2[g["pos2"]][None] += 1
-            if end_g == end_c:
-                index_g += 1
-                index_c += 1
-                offset_g = end_g
-                offset_c = end_c
-            elif end_g < end_c:
-                index_g += 1
-                offset_g = end_g
-            else:
-                index_c += 1
-                offset_c = end_c
-        if not align_errors:
-            aligned_sentence += 1
-        correct_pos1_token += correct_pos1
-        if correct_pos1 == len(gold):
-            correct_pos1_sentence += 1
-        correct_pos2_token += correct_pos2
-        if correct_pos2 == len(gold):
-            correct_pos2_sentence += 1
+                print("<", gold_forms, file=f_report)
+                print(">", content_forms, file=f_report)
+                content = _recover_content(gold, content)
+                recovered_forms = " ".join(_["form"] for _ in content)
+                if recovered_forms != content_forms:
+                    print(":", recovered_forms, file=f_report)
+            gold_token += len(gold)
+            content_token += len(content)
+
+            index_recoveries = []
+            for index, c in enumerate(content, 1):
+                if c["index"] != index:
+                    index_recoveries.append(f'index recovery: {c["index"]} -> {index}')
+                    c["index"] = index
+                    recovered_index_token += 1
+            if index_recoveries:
+                recovered_index_sentence += 1
+                if f_report:
+                    print(*index_recoveries, sep="\n", file=f_report)
+
+            align_errors = []
+            offset_g = offset_c = 0
+            index_g = index_c = 0
+            correct_pos1 = correct_pos2 = 0
+            while index_g < len(gold) and index_c < len(content):
+                g = gold[index_g]
+                c = content[index_c]
+                end_g = offset_g + len(g["form"])
+                end_c = offset_c + len(c["form"])
+                if offset_g == offset_c and end_g == end_c:
+                    aligned_token += 1
+                    if g["pos1"]:
+                        if g["pos1"] == c["pos1"]:
+                            correct_pos1 += 1
+                        else:
+                            confusion_pos1[g["pos1"]][c["pos1"]] += 1
+                    if g["pos2"]:
+                        if g["pos2"] == c["pos2"]:
+                            correct_pos2 += 1
+                        else:
+                            confusion_pos2[g["pos2"]][c["pos2"]] += 1
+                else:
+                    align_errors.append(
+                        f'align error: {c["index"]}, {json.dumps(c["form"], ensure_ascii=False)} -> {json.dumps(g["form"], ensure_ascii=False)}')
+                    if g["pos1"]:
+                        confusion_pos1[g["pos1"]][None] += 1
+                    if g["pos2"]:
+                        confusion_pos2[g["pos2"]][None] += 1
+                if end_g == end_c:
+                    index_g += 1
+                    index_c += 1
+                    offset_g = end_g
+                    offset_c = end_c
+                elif end_g < end_c:
+                    index_g += 1
+                    offset_g = end_g
+                else:
+                    index_c += 1
+                    offset_c = end_c
+            if not align_errors:
+                aligned_sentence += 1
+            correct_pos1_token += correct_pos1
+            if correct_pos1 == len(gold):
+                correct_pos1_sentence += 1
+            correct_pos2_token += correct_pos2
+            if correct_pos2 == len(gold):
+                correct_pos2_sentence += 1
 
     def f1(m: int, g: int, c: int) -> float:
         return 2. / (g / m + c / m) if m > 0 else 0.
@@ -212,32 +213,32 @@ def _recover_content(gold, content):
     return content
 
 
-def parse_records(content: str, stop_on_error: bool = False) -> list[dict]:
-    rows = [_ for _ in select_tsv_part(content, tsv_index=0, min_columns=2) if _[1]]
-    if not rows:
+def parse_records(content: str, stop_on_error: bool = False, dummy_form: str = ".") -> list[list[dict]]:
+    rows_list = [_ for _ in select_tsv_part(content, tsv_index=None, min_columns=2) if _[1]]
+    if not rows_list:
         return []
-    field_num = len(rows[0])
-    records = []
-    for r in rows:
-        try:
-            if len(r) < field_num:
-                r = r + ["_"] * (field_num - len(r))
-            if field_num == 2:
-                records.append({"index": int(r[0]), "form": r[1], "pos1": "", "pos2": ""})
-            elif field_num == 3:
-                records.append({"index": int(r[0]), "form": r[1], "pos1": r[2], "pos2": ""})
-            elif field_num == 4:
-                records.append({"index": int(r[0]), "form": r[1], "pos1": r[2], "pos2": r[3]})
-        except Exception as e:
-            if stop_on_error:
-                raise e
-            break
-    if records:  # eliminate tail whitespaces of last token
-        records[-1]["form"] = records[-1]["form"].rstrip(" ")
-    for _, r in enumerate(records):
-        if not r["form"]:
-            r["form"] = "."
-    return records
+    field_num = len(rows_list[0][0])
+    records_list = []
+    for rows in rows_list:
+        records = []
+        for r in rows:
+            try:
+                if len(r) < field_num:
+                    r = r + ["_"] * (field_num - len(r))
+                if field_num == 2:
+                    records.append({"index": int(r[0]), "form": r[1] or dummy_form, "pos1": "", "pos2": ""})
+                elif field_num == 3:
+                    records.append({"index": int(r[0]), "form": r[1] or dummy_form, "pos1": r[2], "pos2": ""})
+                elif field_num == 4:
+                    records.append({"index": int(r[0]), "form": r[1] or dummy_form, "pos1": r[2], "pos2": r[3]})
+            except Exception as e:
+                if stop_on_error:
+                    raise e
+                break
+        if records:  # eliminate tail whitespaces of last token
+            records[-1]["form"] = records[-1]["form"].rstrip(" ")
+            records_list.append(records)
+    return records_list
 
 
 def reporting_fields(r: dict) -> list:

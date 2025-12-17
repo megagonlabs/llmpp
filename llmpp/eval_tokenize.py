@@ -68,12 +68,11 @@ def eval(
 
     for line_index, messages in enumerate(completion_results, 1):
         result = messages[-1]
-        gold_sentence += 1
         assert "gold" in result, f"Inference result not saved in line #{line_index}"
         gold_list = parse_records(result["gold"], stop_on_error)
         content_list = parse_records(result["content"], stop_on_error)
-
         for gold, content in zip(gold_list, content_list):
+            gold_sentence += 1
             gold_forms = " ".join(_["form"] for _ in gold)
             content_forms = " ".join(_["form"] for _ in content)
             if gold_forms == content_forms:

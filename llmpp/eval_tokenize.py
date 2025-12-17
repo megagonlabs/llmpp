@@ -214,7 +214,7 @@ def _recover_content(gold, content):
 
 
 def parse_records(content: str, stop_on_error: bool = False, dummy_form: str = ".") -> list[list[dict]]:
-    rows_list = [_ for _ in select_tsv_part(content, tsv_index=None, min_columns=2) if _[1]]
+    rows_list = [_ for _ in select_tsv_part(content, tsv_index=None, min_columns=2) if _ and _[0][1]]
     if not rows_list:
         return []
     field_num = len(rows_list[0][0])

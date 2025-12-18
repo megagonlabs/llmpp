@@ -36,14 +36,14 @@ def main():
             with open(output_eval_json_path, "w", encoding="utf8") as f_eval:
                 json.dump(stats, f_eval, ensure_ascii=False, indent=1)
                 print(file=f_eval)
-            print(stats["digest"])
+            print(completion_results_jsonl, stats["digest"], file=sys.stderr)
             print(completion_results_jsonl, *[stats[u][k] for u in REPORTING_FIELDS for k in REPORTING_FIELDS[u]], sep="\t")
         except Exception as e:
-            print("skipping", completion_results_jsonl)
+            print("skipping", completion_results_jsonl, file=sys.stderr)
             if args.stop_on_error:
                 raise e
             print(e, file=sys.stderr)
-        print()
+        print(file=sys.stderr)
 
 
 def eval(

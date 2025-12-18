@@ -25,7 +25,6 @@ def parse_args() -> Namespace:
 def main():
     args = parse_args()
     for completion_results_jsonl in args.completion_results_jsonl_files:
-        print(completion_results_jsonl)
         try:
             base_path = Path(completion_results_jsonl)
             output_eval_json_path = f"{base_path.parent}/{base_path.stem}.tokenize.json"
@@ -40,10 +39,10 @@ def main():
             print(stats["digest"])
             print(completion_results_jsonl, *[stats[u][k] for u in REPORTING_FIELDS for k in REPORTING_FIELDS[u]], sep="\t")
         except Exception as e:
+            print("skipping", completion_results_jsonl)
             if args.stop_on_error:
                 raise e
             print(e, file=sys.stderr)
-            print("skipping", completion_results_jsonl)
         print()
 
 

@@ -56,6 +56,8 @@ def eval(
     confusion_lang = defaultdict(lambda: defaultdict(int))
 
     for line_index, messages in enumerate(completion_results, 1):
+        if "sentence delimitation" in messages[-2]["content"]:
+            continue
         result = messages[-1]
         assert "gold" in result, f"Inference result not saved in line #{line_index}"
         gold_lang, gold_sentences = parse_records(result["gold"])
@@ -101,7 +103,7 @@ def eval(
 def parse_records(content: str) -> tuple[str, list[str]]:
     lines = content.split("\n")
     l0 = lines[0]
-    if not l0 or "\t" in l0 or l0.startswith("- Task") or lines[1] or not lines[2]:
+    if len(lines) < 3 or not l0 or "\t" in l0 or l0.startswith("- Task") or lines[1] or not lines[2]:
         return None, []  # no delimiting task there
     lang = l0
     mode = "token" if "\t" in lines[2] else "sentence"

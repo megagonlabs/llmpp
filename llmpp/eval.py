@@ -118,6 +118,8 @@ def eval(
     confusion_deprel = defaultdict(lambda: defaultdict(int))
 
     for line_index, messages in enumerate(completion_results, 1):
+        if "dependency parsing" in messages[-2]["content"]:
+            continue
         result = messages[-1]
         gold_sentence += 1
         assert "gold" in result, f"Inference result not saved in line #{line_index}"

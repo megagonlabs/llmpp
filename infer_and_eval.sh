@@ -4,7 +4,11 @@ set -e
 
 model_dir=$1
 target_jsonl=$2
-vllm_options=${@:3:($#-2)}
+eval_type=$3
+if [ -z ${eval_type} ]; then
+  eval_type=eval
+fi
+vllm_options=${@:4:($#-3)}
 
 source venv/bin/activate
 
@@ -33,4 +37,4 @@ if [[ "${target_jsonl}" == *-linearized-* ]] || [[ "${target_jsonl}" == *-bracke
 else
   option=""
 fi
-python -m llmpp.eval ${option} ${eval_jsonl}
+python -m llmpp.${eval_type} ${option} ${eval_jsonl}

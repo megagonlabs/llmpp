@@ -15,6 +15,7 @@ lr=""
 lr_suffix=""
 force=0
 add_datetime_suffix=0
+skip_eval=0
 
 echo sft_method: ${sft_method}
 echo targets: ${targets}
@@ -32,6 +33,10 @@ do
   elif [[ "${target}" == "--datetime" ]]; then
     echo set add_date_time_suffix
     add_datetime_suffix=1
+    continue
+  elif [[ "${target}" == "--skip-eval" ]]; then
+    echo set skip_eval
+    skip_eval=1
     continue
   elif [[ ${target} == "--"* ]]; then
     prev_attr=${attr}
@@ -142,7 +147,9 @@ do
     done
   fi
 
-  if [[ ${merge_lora_weights} ]] ; then
+  if [[ ${skip_eval} -eq 1 ]] ; then
+    echo skipping inference and evaluation: ${result_dir}
+  elif [[ ${merge_lora_weights} ]] ; then
     python -m llmpp.merge_peft_model ${peft_dir} local_models/${peft_dir}.merged
     ./infer_and_eval.sh local_models/${peft_dir}.merged ${test_jsonl}
     rm -f local_models/${peft_dir}.merged/model*.safetensors local_models/${peft_dir}.merged/model.safetensors.index.json

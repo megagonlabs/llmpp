@@ -13,9 +13,10 @@ def main():
         with open(input_file, "r", encoding="utf8") as fin:
             for line in fin.readlines():
                 m = language_pattern.search(line)
-                if m and len(m.groups()):
-                    language = m.group(1)
-                    language_lines[language].append(line)
+                for g in m.groups() if m else []:
+                    if g:
+                        language_lines[g].append(line)
+                        break
                 else:
                     print("no match:", line, end="", file=sys.stderr)
     for language, lines in language_lines.items():

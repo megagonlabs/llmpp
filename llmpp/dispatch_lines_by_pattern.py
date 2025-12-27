@@ -16,9 +16,11 @@ def main():
                 if m and len(m.groups()):
                     language = m.group(1)
                     language_lines[language].append(line)
+                else:
+                    print("no match:", line, end="", file=sys.stderr)
     for language, lines in language_lines.items():
         with open(f"{output_path_base}.{language}", "w", encoding="utf8") as fout:
-            print(*lines, sep="", file=fout)
+            print(*lines, sep="", end="", file=fout)
 
 
 if __name__ == "__main__":

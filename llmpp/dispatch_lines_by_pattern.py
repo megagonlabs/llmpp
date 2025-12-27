@@ -18,7 +18,7 @@ def main():
                         language_lines[g].append(line)
                         break
                 else:
-                    print(f"no match: {input_file} #{idx},", line, end="", file=sys.stderr)
+                    print(f"line #{idx} - no match,", line, end="", file=sys.stderr)
         for language, lines in language_lines.items():
             with open(f"{input_file}.{language}", "w", encoding="utf8") as fout:
                 print(*lines, sep="", end="", file=fout)

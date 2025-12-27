@@ -20,7 +20,7 @@ def main():
                 else:
                     print(f"line #{idx} - no match,", line, end="", file=sys.stderr)
         for language, lines in language_lines.items():
-            with open(f"{input_file}.{language}", "w", encoding="utf8") as fout:
+            with open(f"{input_file}__{language}", "w", encoding="utf8") as fout:
                 print(*lines, sep="", end="", file=fout)
 
 

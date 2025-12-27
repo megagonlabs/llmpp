@@ -38,4 +38,4 @@ else
   option=""
 fi
 python -m llmpp.${eval_type} ${option} ${eval_jsonl}
-python -m llmpp.dispatch_lines_by_pattern '"gold": "(.+?)\\n|We will now perform .+ on (.+?) sentence.\\n' ${eval_jsonl}
+python -m llmpp.dispatch_lines_by_pattern 'We will now perform .+ on (.+?) sentence\.\\n|language identification .+"gold": "(.+?)\\n\\n' ${eval_jsonl}

@@ -9,7 +9,7 @@ def main():
     input_files = sys.argv[2:]
     language_lines = defaultdict(list)
     for input_file in input_files:
-        print("start", input_file, file=sys.stderr)
+        print("dispatching", input_file, file=sys.stderr)
         with open(input_file, "r", encoding="utf8") as fin:
             for idx, line in enumerate(fin.readlines(), 1):
                 m = language_pattern.search(line)

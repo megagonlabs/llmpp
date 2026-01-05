@@ -28,6 +28,7 @@ def get_config(parser: ArgumentParser = None):
     parser.add_argument("--max_seq_length", "--l", type=int)
     parser.add_argument("--num_train_epochs", "--e", type=int)
     parser.add_argument("--learning_rate", "--lr")
+    parser.add_argument("--device_map")
     parser.add_argument("--load_in_4bit", "--li4", action="store_true")
     parser.add_argument("--load_in_8bit", "--li8", action="store_true")
     parser.add_argument("--lora_r", "--r", type=int)
@@ -57,6 +58,8 @@ def get_config(parser: ArgumentParser = None):
         config["sft_config_args"]["num_train_epochs"] = args.num_train_epochs
     if args.learning_rate:
         config["sft_config_args"]["learning_rate"] = float(args.learning_rate)
+    if args.device_map:
+        config["model_args"]["device_map"] = args.device_map
     if args.load_in_4bit:
         config["model_args"]["load_in_4bit"] = True
     if args.load_in_8bit:

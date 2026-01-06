@@ -6,9 +6,9 @@ def main():
     input_files = sys.argv[2:]
     suffix_num_lines = {k: int(v) for k, v in [_.split(":") for _ in suffix_num_lines_csv.split(",")]}
     total_num_lines = sum(suffix_num_lines.values())
-    print(f"{total_num_lines=}, {suffix_num_lines=}", file=sys.stderr)
+    print(f"{total_num_lines=}, {suffix_num_lines=}")
     for input_file in input_files:
-        print("input path:", input_file, file=sys.stderr)
+        print("input path:", input_file)
         with open(input_file, "r", encoding="utf8") as fin:
             lines = fin.readlines()
         if len(lines) != total_num_lines:
@@ -20,7 +20,7 @@ def main():
             with open(output_file, "w", encoding="utf8") as fout:
                 print(*lines[offset:offset + num_lines], sep="", end="", file=fout)
                 offset += num_lines
-            print("    create:", output_file, file=sys.stderr)
+            print("   created:", output_file)
 
 
 if __name__ == "__main__":

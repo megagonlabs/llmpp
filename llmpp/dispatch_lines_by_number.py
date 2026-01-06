@@ -8,15 +8,17 @@ def main():
     total_num_lines = sum(suffix_num_lines.values())
     print(f"{total_num_lines=}, {suffix_num_lines=}", file=sys.stderr)
     for input_file in input_files:
-        print("dispatching", input_file, file=sys.stderr)
+        print("input path:", input_file, file=sys.stderr)
         with open(input_file, "r", encoding="utf8") as fin:
             lines = fin.readlines()
         assert len(lines) == total_num_lines, f"{len(lines)=} != {total_num_lines}"
         offset = 0
         for suffix, num_lines in suffix_num_lines.items():
-            with open(f"{input_file}-{suffix}", "w", encoding="utf8") as fout:
+            output_file = f"{input_file}-{suffix}"
+            with open(output_file, "w", encoding="utf8") as fout:
                 print(*lines[offset:offset + num_lines], sep="", end="", file=fout)
                 offset += num_lines
+            print("    create:", input_file, file=sys.stderr)
 
 
 if __name__ == "__main__":

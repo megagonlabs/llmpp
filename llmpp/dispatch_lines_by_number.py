@@ -11,7 +11,9 @@ def main():
         print("input path:", input_file, file=sys.stderr)
         with open(input_file, "r", encoding="utf8") as fin:
             lines = fin.readlines()
-        assert len(lines) == total_num_lines, f"{len(lines)=} != {total_num_lines}"
+        if len(lines) != total_num_lines:
+            print(f"skipping due to inconsistency ({len(lines)=} != {total_num_lines}): {input_file}", file=sys.stderr)
+            continue
         offset = 0
         for suffix, num_lines in suffix_num_lines.items():
             output_file = f"{input_file}-{suffix}"

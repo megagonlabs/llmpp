@@ -18,7 +18,7 @@ def main():
             with open(output_file, "w", encoding="utf8") as fout:
                 print(*lines[offset:offset + num_lines], sep="", end="", file=fout)
                 offset += num_lines
-            print("    create:", input_file, file=sys.stderr)
+            print("    create:", output_file, file=sys.stderr)
 
 
 if __name__ == "__main__":

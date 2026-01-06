@@ -26,9 +26,13 @@ def main():
     args = parse_args()
     for completion_results_jsonl in args.completion_results_jsonl_files:
         try:
-            base_path = Path(completion_results_jsonl)
-            output_eval_json_path = f"{base_path.parent}/{base_path.stem}.tokenize.json"
-            output_report_path = f"{base_path.parent}/{base_path.stem}.tokenize.report"
+            if completion_results_jsonl.endswith(".jsonl"):
+                base_path = Path(completion_results_jsonl)
+                output_eval_json_path = f"{base_path.parent}/{base_path.stem}.tokenize.json"
+                output_report_path = f"{base_path.parent}/{base_path.stem}.tokenize.report"
+            else:
+                output_eval_json_path = f"{base_path}.tokenize.json"
+                output_report_path = f"{base_path}.tokenize.report"
             with open(completion_results_jsonl, "r", encoding="utf8") as fin:
                 completion_results = [json.loads(_)["messages"] for _ in fin]
             with open(output_report_path, "w", encoding="utf8") as f_report:

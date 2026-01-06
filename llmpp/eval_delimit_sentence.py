@@ -26,8 +26,11 @@ def main():
     task_regexp = re.compile(args.task_regexp)
     for completion_results_jsonl in args.completion_results_jsonl_files:
         try:
-            base_path = Path(completion_results_jsonl)
-            output_eval_json_path = f"{base_path.parent}/{base_path.stem}.sentence.json"
+            if completion_results_jsonl.endswith(".jsonl"):
+                base_path = Path(completion_results_jsonl)
+                output_eval_json_path = f"{base_path.parent}/{base_path.stem}.sentence.json"
+            else:
+                output_eval_json_path = f"{base_path}.sentence.json"
             with open(completion_results_jsonl, "r", encoding="utf8") as fin:
                 completion_results = [m for m in [json.loads(_)["messages"] for _ in fin] if task_regexp.search(m[-2]["content"])]
             stats = eval(completion_results)

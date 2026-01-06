@@ -30,10 +30,15 @@ def main():
     args = parse_args()
     for completion_results_jsonl in args.completion_results_jsonl_files:
         try:
-            base_path = Path(completion_results_jsonl)
-            output_eval_json_path = f"{base_path.parent}/{base_path.stem}.eval.json"
-            output_eval_ignore_punct_json_path = f"{base_path.parent}/{base_path.stem}.eval.ignore-punct.json"
-            output_report_path = f"{base_path.parent}/{base_path.stem}.eval.report"
+            if completion_results_jsonl.endswith(".jsonl"):
+                base_path = Path(completion_results_jsonl)
+                output_eval_json_path = f"{base_path.parent}/{base_path.stem}.eval.json"
+                output_eval_ignore_punct_json_path = f"{base_path.parent}/{base_path.stem}.eval.ignore-punct.json"
+                output_report_path = f"{base_path.parent}/{base_path.stem}.eval.report"
+            else:
+                output_eval_json_path = f"{base_path}.eval.json"
+                output_eval_ignore_punct_json_path = f"{base_path}.eval.ignore-punct.json"
+                output_report_path = f"{base_path}.eval.report"
             config = {
                 "src": completion_results_jsonl,
                 "use_deprel_subtypes": args.use_deprel_subtypes,

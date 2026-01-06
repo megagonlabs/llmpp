@@ -7,9 +7,9 @@ from collections import defaultdict
 def main():
     language_pattern = re.compile(sys.argv[1])
     input_files = sys.argv[2:]
-    language_lines = defaultdict(list)
     for input_file in input_files:
         print("dispatching", input_file, file=sys.stderr)
+        language_lines = defaultdict(list)
         with open(input_file, "r", encoding="utf8") as fin:
             for idx, line in enumerate(fin.readlines(), 1):
                 m = language_pattern.search(line)

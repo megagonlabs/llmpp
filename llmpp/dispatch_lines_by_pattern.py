@@ -2,6 +2,7 @@ import re
 import sys
 
 from collections import defaultdict
+from pathlib import Path
 
 
 def main():
@@ -19,8 +20,10 @@ def main():
                         break
                 else:
                     print(f"line #{idx} - no match,", line, end="", file=sys.stderr)
+        base_path = Path(input_file)
         for language, lines in language_lines.items():
-            with open(f"{input_file}__{language}", "w", encoding="utf8") as fout:
+            output_path = f"{base_path.parent}/{base_path.stem}__{language}.{base_path.suffix}"
+            with open(output_path, "w", encoding="utf8") as fout:
                 print(*lines, sep="", end="", file=fout)
 
 

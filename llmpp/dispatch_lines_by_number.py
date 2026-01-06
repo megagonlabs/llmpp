@@ -1,5 +1,7 @@
 import sys
 
+from pathlib import Path
+
 
 def main():
     suffix_num_lines_csv = sys.argv[1]
@@ -15,12 +17,13 @@ def main():
             print(f"skipping due to inconsistency ({len(lines)=} != {total_num_lines}): {input_file}", file=sys.stderr)
             continue
         offset = 0
+        base_path = Path(input_file)
         for suffix, num_lines in suffix_num_lines.items():
-            output_file = f"{input_file}-{suffix}"
-            with open(output_file, "w", encoding="utf8") as fout:
+            output_path = f"{base_path.parent}/{base_path.stem}-{suffix}.{base_path.suffix}"
+            with open(output_path, "w", encoding="utf8") as fout:
                 print(*lines[offset:offset + num_lines], sep="", end="", file=fout)
                 offset += num_lines
-            print("   created:", output_file)
+            print("   created:", output_path)
 
 
 if __name__ == "__main__":

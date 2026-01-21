@@ -10,8 +10,6 @@ if [ -z ${eval_type} ]; then
 fi
 vllm_options=${@:4:($#-3)}
 
-source venv/bin/activate
-
 eval_jsonl=${model_dir}/${target_jsonl}/completion.jsonl
 
 if [[ $model_dir == *"Llama-3"* ]]; then

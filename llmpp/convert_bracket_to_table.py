@@ -33,7 +33,7 @@ def flatten_tree(tree: list[str|list]) -> list:
         label = tree[0]
         for subtree in tree[1:]:
             if len(subtree) == 1:
-                assert isinstance(subtree[0], str), f"bad subtree {subtree}"
+                assert isinstance(subtree[0], str), f"bad subtree: {subtree}"
                 pos = subtree[0]
                 head = [None, "", pos, None, label, children]
                 records.append(head)
@@ -55,7 +55,7 @@ def flatten_tree(tree: list[str|list]) -> list:
         for child in r[-1]:
             child[3] = str(index)
         del r[-1]
-    assert all(_ is not None for r in records for _ in r), records
+    assert all(_ is not None for r in records for _ in r), f"incompleted: {records}"
     return records
 
 
@@ -92,8 +92,8 @@ def bracket_to_table(
             try:
                 pred_table = flatten_tree(constituent_tree(list(yield_constituent_units(pred_text)), no_terminal)[1])
             except Exception as e:
+                print(result, file=sys.stderr)
                 if stop_on_error:
-                    print(result, file=sys.stderr)
                     raise e
                 pred_table = []
             try:

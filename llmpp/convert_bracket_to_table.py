@@ -92,7 +92,7 @@ def bracket_to_table(
             try:
                 pred_table = flatten_tree(constituent_tree(list(yield_constituent_units(pred_text)), no_terminal)[1])
             except Exception as e:
-                print(e, result, file=sys.stderr)
+                print(f"{e}:", result, file=sys.stderr)
                 if stop_on_error:
                     raise e
                 pred_table = []

@@ -55,12 +55,14 @@ def main():
                 conllu_lines = fin.readlines()
 
             outputs = []
-            for s in convert_lines(conllu_lines, add_whitespace, escape_bracket):
+            for s in convert_lines(input_conllu, conllu_lines, add_whitespace, escape_bracket):
                 tokens = [
                     {
                         "INDEX": f["id"] + 1,
                         "ORTH": f["orth"],
                         "ORTHWS": f["orth_with_whitespace"],
+                        "LEMMA": f["lemma"],
+                        "LEMMAWS": f["lemma_with_whitespace"],
                         "UPOS": f["upos"],
                         "XPOS": f["xpos"],
                         "POS": f[pos.lower()],
@@ -146,7 +148,7 @@ def main():
                                     prev = match.end()
                                     break
                             else:
-                                assert False, f"meta field not replaced: {match.group(0)}"
+                                assert False, f"meta field not replaced: {match.group(0)}, {template_toml}"
                         m[key] = result + m[key][prev:]
                 outputs.append(messages)
 
@@ -154,9 +156,17 @@ def main():
                 for messages in outputs:
                     json.dump({"messages": messages}, fout, ensure_ascii=False)
                     print(file=fout)
-            print(f"prompt generated: {output_jsonl_path}", file=sys.stderr)
 
 
+UD_PATH_PATTERN = re.compile(
+    r"^(?:.*/|)UD_([^-]+)-([^/]+)(?:/|/([^_]+)_([^-]+)-ud-(train|dev|test).conllu)?$"
+)
+CONLLU_NEWDOC_PATTERN = re.compile(
+    r"^# newdoc[ _]id = ?(.+)$"
+)
+CONLLU_NEWPAR_PATTERN = re.compile(
+    r"^# newpar[ _]id = ?(.+)$"
+)
 CONLLU_TEXT_PATTERN = re.compile(
     r"^# text = ?(.+)$"
 )
@@ -164,12 +174,12 @@ CONLLU_TOKEN_PATTERN = re.compile(
     r"^([1-9][0-9]*)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([0-9]*)\t([^\t]+)\t([^\t]+)\t([^\t]*)$"
 )
 CONLLU_TOKEN_SKIP_PATTERN = re.compile(
-    r"^(([1-9][0-9]*[\-.][1-9][0-9]*)\t|# (sent_id =|text_en =|text_ortho =|translit =|source =|generator =|udpipe_model =|note =|auto =|ToDoOrigText =|ToDoOrigtext =|spelling =|genre =|orig_file_sentence|duplicate:) ).+$|^#$|^0(.+)$|^# Tectogrammatical annotation available(.+)$|^# (layer=|citation_text=|citation_chapter=).+$"
+    r"^(([1-9][0-9]*[\-.][1-9][0-9]*)\t|# (sent_id =|doc_id =|newdoc[ _]id =|newpar[ _]id =||lang =|meta_type =|text_en =|text_ortho =|translit =|source =|generator =|udpipe_model =|note =|auto =|ToDoOrigText =|ToDoOrigtext =|spelling =|genre =|document_genre =|meta_source =|orig_text =|notes =|phonetic_text =|meta_description =|at|orig_file_sentence|duplicate:|First word|31.01.23|WARNING:|جو is PART|word|this sentence|note:|speaker) ).+$|^#$|^0(.+)$|^# Tectogrammatical annotation available(.+)$|^# (layer=|citation_text=|citation_chapter=).+$"
 )
 CONLLU_BUNSETU_PATTERN = re.compile(r"BunsetuBILabel=(.)")
 
 
-def convert_lines(lines, add_whitespace, escape_bracket):
+def convert_lines(path, lines, add_whitespace, escape_bracket):
     sentences = []
     tokens = []
     bunsetu = []
@@ -195,15 +205,19 @@ def convert_lines(lines, add_whitespace, escape_bracket):
             m = CONLLU_TOKEN_PATTERN.match(line)
             if m is None:
                 m = CONLLU_TOKEN_SKIP_PATTERN.match(line)
-                assert m is not None, f"{sentence=}, {line=}"
+                assert m is not None, f"{path}, {sentence=}, {line=}"
                 continue
 
             token_id = int(m.group(1)) - 1
             orth = m.group(2)
+            lemma = m.group(3)
             if escape_bracket:
                 orth = escape_brackets(orth)
+                lemma = escape_brackets(lemma)
             upos = m.group(4)
             xpos = m.group(5)
+            if xpos.startswith("+"):
+                xpos = xpos[1:]  # workaround for ko_gsd train set
             head_id = int(m.group(7)) - 1
             if head_id < 0:
                 head_id = token_id
@@ -223,17 +237,22 @@ def convert_lines(lines, add_whitespace, escape_bracket):
                     bunsetu_id += 1
                     bunsetu = []
 
-            assert add_whitespace in ["after", "before", False]
+            assert add_whitespace in ["after", "before", False], add_whitespace
             if add_whitespace == "after" and whitespace:
                 orth_with_whitespace = f"{orth} "
+                lemma_with_whitespace = f"{lemma} "
             elif add_whitespace == "before" and prev_whitespace:
                 orth_with_whitespace = f" {orth}"
+                lemma_with_whitespace = f" {lemma}"
             else:
                 orth_with_whitespace = orth
+                lemma_with_whitespace = lemma
             token = {
                 "id": token_id,
                 "orth": orth,
                 "orth_with_whitespace": orth_with_whitespace,
+                "lemma": lemma,
+                "lemma_with_whitespace": lemma_with_whitespace,
                 "upos": upos,
                 "xpos": xpos,
                 "label": label,
@@ -249,6 +268,7 @@ def convert_lines(lines, add_whitespace, escape_bracket):
             if tokens[-1]["whitespace"]:
                 tokens[-1]["whitespace"] = False
                 tokens[-1]["orth_with_whitespace"] = tokens[-1]["orth_with_whitespace"][:-1]
+                tokens[-1]["lemma_with_whitespace"] = tokens[-1]["lemma_with_whitespace"][:-1]
             if bunsetu:
                 bunsetu_list.append(
                     (
@@ -256,7 +276,7 @@ def convert_lines(lines, add_whitespace, escape_bracket):
                         "".join(t["orth_with_whitespace"] for t in bunsetu),
                     )
                 )
-            assert bunsetu_list, f"{sentence=}, {line=}"
+            assert bunsetu_list, f"{path=}, {sentence=}, {line=}"
             bunsetu_deps = []
             for bunsetu_id, (bunsetu, bunsetu_orth) in enumerate(bunsetu_list):
                 bunsetu_begin = bunsetu[0]["id"]
@@ -275,7 +295,7 @@ def convert_lines(lines, add_whitespace, escape_bracket):
                         "head": bunsetu_head_id + 1,
                         "label": token["label"],
                     }
-                assert bunsetu_dep
+                assert bunsetu_dep, path
                 bunsetu_deps.append(bunsetu_dep)
 
             sentences.append(
@@ -294,9 +314,9 @@ def convert_lines(lines, add_whitespace, escape_bracket):
             state = "text"
 
         else:
-            assert False, f"{sentence=}, {line=}"
+            assert False, f"{path=}, {sentence=}, {line=}"
 
-    assert state == "text"
+    assert state == "text", path
 
     return sentences
 

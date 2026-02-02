@@ -1,0 +1,24 @@
+[[message_template]]
+role = "system"
+content = """
+You are an expert in natural language processing."""
+
+[[message_template]]
+role = "user"
+content = """
+We will now perform language identification, sentence delimitation, and tokenization.
+First, output the language identification result of the input text and a blank line.
+Next, for each sentence in the input text, output a TSV having two fields: the word index starting from 1 and the word.
+Insert a blank line between sentences.
+
+input text:
+<<<TEXT>>>
+"""
+
+[[message_template]]
+role = "assistant"
+content = """
+<<<LANGUAGE>>>
+
+<<<SENTENCE_LINES>>>
+"""

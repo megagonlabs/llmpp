@@ -1,0 +1,22 @@
+[[message_template]]
+role = "system"
+content = """
+You are an expert in natural language processing."""
+
+[[message_template]]
+role = "user"
+content = """
+We will now perform language identification and sentence delimitation.
+First, output the language identification result of the input text, then after a blank line, output the sentence delimitation result.
+
+input text:
+<<<TEXT>>>
+"""
+
+[[message_template]]
+role = "assistant"
+content = """
+<<<LANGUAGE>>>
+
+<<<SENTENCE_LINES>>>
+"""

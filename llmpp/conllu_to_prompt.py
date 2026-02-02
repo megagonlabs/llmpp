@@ -162,7 +162,7 @@ UD_PATH_PATTERN = re.compile(
     r"^(?:.*/|)UD_([^-]+)-([^/]+)(?:/|/([^_/]+)_([^-/]+)-ud-(train|dev|test).conllu)?$"
 )
 DATASET_PATH_PATTERN = re.compile(
-    r"^([A-Z0-9][^@/]+)@([^-/]+)-(r[0-9.^_]+)/([^-/]+)-ud-(train|dev|test).conllu)?$"
+    r"^([A-Z0-9][^@/]+)@([^-/]+)-(r[0-9.^_]+)/([^-/]+)-ud-(train|dev|test).conllu"
 )
 CONLLU_NEWDOC_PATTERN = re.compile(
     r"^# newdoc[ _]id = ?(.+)$"

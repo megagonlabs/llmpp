@@ -14,7 +14,7 @@ def main():
     with open(template_path, "rb") as fin:
         template = tomllib.load(fin)
     for conllu_path in conllu_path_list:
-        print("processing", conllu_path, file=sys.stederr)
+        print("processing", conllu_path, file=sys.stderr)
         random.seed(42)
         m = UD_PATH_PATTERN.match(conllu_path) or DATASET_PATH_PATTERN.match(conllu_path)
         lang = m.group(1)

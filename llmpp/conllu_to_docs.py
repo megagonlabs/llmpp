@@ -15,7 +15,7 @@ def main():
         template = tomllib.load(fin)
     for conllu_path in conllu_path_list:
         random.seed(42)
-        m = UD_PATH_PATTERN.match(conllu_path)
+        m = UD_PATH_PATTERN.match(conllu_path) or DATASET_PATH_PATTERN.match(conllu_path)
         lang = m.group(1)
         subset = m.group(5)
         output_path = f"{Path(conllu_path).parent / Path(template_path).stem}.{subset}.jsonl"

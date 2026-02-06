@@ -9,18 +9,18 @@ You are a linguist and specialize in dependency parsing based on Universal Depen
 role = "user"
 content = """
 We will now perform dependency parsing on <<<LANGUAGE>>> sentence.
-After splitting the input sentence into words with fields for word index and part of speech as shown below, create a TSV with four fields: word index from 1 to <<<TOKEN_NUM>>> + part of speech + the dependent word index + the Universal Dependencies relation.
+After splitting the input sentence into words with fields for word index and part of speech as shown below, create a TSV with four fields: word index from 1 to <<<TOKEN_NUM>>> + the dependent word index + the Universal Dependencies relation.
 However, for the word that is the main predicate of the sentence, the dependent word index should be 0.
 
 input sentence:
 <<<SENTENCE>>>
 
 indexes and words:
-<<<TOKEN_TSV:INDEX_ORTHWS_UPOS>>>
+<<<TOKEN_TSV:INDEX_ORTHWS_POS>>>
 """
 
 [[message_template]]
 role = "assistant"
 content = """
-<<<TOKEN_TSV:INDEX_POS_HEAD_LABEL>>>
+<<<TOKEN_TSV:INDEX_HEAD_LABEL>>>
 """

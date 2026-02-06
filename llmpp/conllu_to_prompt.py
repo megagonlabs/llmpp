@@ -66,15 +66,15 @@ def main():
                         "UPOS": f["upos"],
                         "XPOS": f["xpos"],
                         "POS": f[pos.lower()],
-                        "HEAD": 0 if f["label"] == "root" else f["head"] + 1,
-                        "HEADORTH": "ROOT" if f["label"] == "root" else s["tokens"][f["head"]]["orth"],
+                        "HEAD": (0 if f["label"] == "root" else f["head"] + 1) if f["head"] != "_" else "_",
+                        "HEADORTH": ("ROOT" if f["label"] == "root" else s["tokens"][f["head"]]["orth"]) if f["head"] != "_" else "_",
                         "LABEL": f["label"],
                         "CHILDREN": [],
                     } for f in s["tokens"]
                 ]
                 root = None
                 for t in tokens:
-                    if t["HEAD"] > 0:
+                    if t["HEAD"] != "_" and t["HEAD"] > 0:
                         t["HEAD_TOKEN"] = tokens[t["HEAD"] - 1]
                         t["HEAD_TOKEN"]["CHILDREN"].append(t)
                     else:
@@ -174,7 +174,7 @@ CONLLU_TEXT_PATTERN = re.compile(
     r"^# text = ?(.+)$"
 )
 CONLLU_TOKEN_PATTERN = re.compile(
-    r"^([1-9][0-9]*)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([0-9]*)\t([^\t]+)\t([^\t]+)\t([^\t]*)$"
+    r"^([1-9][0-9]*)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([0-9]+|_)\t([^\t]+)\t([^\t]+)\t([^\t]*)$"
 )
 CONLLU_TOKEN_SKIP_PATTERN = re.compile(
     r"^(([1-9][0-9]*[\-.][1-9][0-9]*)\t|# (sent_id =|doc_id =|newdoc[ _]id =|newpar[ _]id =||lang =|meta_type =|text_en =|text_ortho =|translit =|source =|generator =|udpipe_model =|note =|auto =|ToDoOrigText =|ToDoOrigtext =|spelling =|genre =|document_genre =|meta_source =|orig_text =|notes =|phonetic_text =|meta_description =|at|orig_file_sentence|duplicate:|First word|31.01.23|WARNING:|جو is PART|word|this sentence|note:|speaker|reference|citation_hierarchy|token_id|token_id_[0-9]+-[0-9]+|Zwierlein_lines) ).+$|^#$|^0(.+)$|^# Tectogrammatical annotation available(.+)$|^# (layer=|citation_text=|citation_chapter=).+$"
@@ -221,9 +221,12 @@ def convert_lines(path, lines, add_whitespace, escape_bracket):
             xpos = m.group(5)
             if xpos.startswith("+"):
                 xpos = xpos[1:]  # workaround for ko_gsd train set
-            head_id = int(m.group(7)) - 1
-            if head_id < 0:
-                head_id = token_id
+            if m.group(7) == "_":
+                head_id = "_"
+            else:
+                head_id = int(m.group(7)) - 1
+                if head_id < 0:
+                    head_id = token_id
             label = m.group(8).lower()
             options = m.group(10)
             whitespace = options.find("SpaceAfter=No") < 0
@@ -264,7 +267,8 @@ def convert_lines(path, lines, add_whitespace, escape_bracket):
                 "whitespace": whitespace,
             }
             tokens.append(token)
-            bunsetu.append(token)
+            if token["head"] != "_":
+                bunsetu.append(token)
             prev_whitespace = whitespace
 
         elif state == "token" and line == "":
@@ -279,7 +283,7 @@ def convert_lines(path, lines, add_whitespace, escape_bracket):
                         "".join(t["orth_with_whitespace"] for t in bunsetu),
                     )
                 )
-            assert bunsetu_list, f"{path=}, {sentence=}, {line=}"
+            # assert bunsetu_list, f"{path=}, {sentence=}, {line=}"
             bunsetu_deps = []
             for bunsetu_id, (bunsetu, bunsetu_orth) in enumerate(bunsetu_list):
                 bunsetu_begin = bunsetu[0]["id"]

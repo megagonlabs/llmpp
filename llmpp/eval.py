@@ -330,7 +330,9 @@ def parse_records(content: str, index_field: int, stop_on_error: bool = False) -
     for r in rows:
         try:
             assert field_num == len(r)
-            if field_num == 4:
+            if field_num == 3:
+                records.append({"index": int(r[0]), "form": "", "upos": "_", "head": int(r[1]), "deprel": r[2]})
+            elif field_num == 4:
                 records.append({"index": int(r[0]), "form": "", "upos": r[1], "head": int(r[2]), "deprel": r[3]})
                 # records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "head": int(r[2]), "deprel": r[3]})
             elif field_num == 5:

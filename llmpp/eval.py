@@ -142,8 +142,8 @@ def eval(
             content_sentence += 1
         else:
             content = []
-        gold_token += sum(1 for _ in gold if not ignore_punct or not is_punctuation(_["upos"]))
-        content_token += sum(1 for _ in content if not ignore_punct or not is_punctuation(_["upos"]))
+        gold_token += sum(1 for _ in gold if not ignore_punct or not is_punctuation(_.get("upos", "")))
+        content_token += sum(1 for _ in content if not ignore_punct or not is_punctuation(_.get("upos", "")))
 
         index_recoveries = []
         for index, c in enumerate(content, 1):
@@ -165,7 +165,7 @@ def eval(
 
         if len(index_recoveries) == 0 and len(form_recoveries) == 0 and len(gold) == len(content):
             aligned_sentence += 1
-            aligned_token += sum(1 for _ in gold if not ignore_punct or not is_punctuation(_["upos"]))
+            aligned_token += sum(1 for _ in gold if not ignore_punct or not is_punctuation(_.get("upos", "")))
 
         content_text = "".join(_["form"] for _ in content)
         if f_report:
@@ -199,7 +199,7 @@ def eval(
         correct_head = True
         correct_head_deprel = True
         for offset, g in gold_offsets.items():
-            if ignore_punct and is_punctuation(g["upos"]):
+            if ignore_punct and is_punctuation(g.get("upos", "")):
                 continue
             if offset in content_offsets:
                 c = content_offsets[offset]

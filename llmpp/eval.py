@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 from argparse import ArgumentParser, Namespace
 from collections import defaultdict
@@ -25,6 +26,10 @@ REPORTING_FIELDS = {
     "sentence": ["gold", "content", "aligned", "correct_form"],
     "token": ["gold", "content", "aligned", "correct_form", "correct_upos", "correct_head", "correct_head_deprel"],
 }
+
+USER_PROMPT_SENTENCE_PATTERN = re.compile(r"\ninput sentence:\n(.+)\n")
+USER_PROMPT_WORDS_PATTERN = re.compile(r"(?s)\n(?:indexes and )?words:\n(.+)")
+
 
 def main():
     args = parse_args()
@@ -92,8 +97,7 @@ def eval(
     f_report: IO,
     f_conllu: IO,
     ignore_punct: bool = False,
-    stop_on_error: bool = False,
-    debug: bool = False,
+    stop_on_error: bool = False
 ) -> dict:
     gold_sentence = 0
     gold_token = 0
@@ -123,12 +127,21 @@ def eval(
     confusion_deprel = defaultdict(lambda: defaultdict(int))
 
     for line_index, messages in enumerate(completion_results, 1):
-        if "dependency parsing" not in messages[-2]["content"]:
+        user_prompt = messages[-2]["content"]
+        if "dependency parsing" not in user_prompt:
             continue
+        input_text, input_tokens = parse_user_prompt(user_prompt)
         result = messages[-1]
         gold_sentence += 1
         assert "gold" in result, f"Inference result not saved in line #{line_index}"
         gold = parse_records(result["gold"], index_field, stop_on_error)
+        gold_text = input_text or "".join(_["form"] for _ in gold)
+        if input_tokens:
+            for g, i in zip(gold, input_tokens):
+                g["form"] = i[0]
+                if len(i) >= 2:
+                    g["upos"] = i[1]
+
         content = parse_records(result["content"], index_field, stop_on_error)
         if len(gold) == len(content):
             content_sentence += 1
@@ -159,7 +172,6 @@ def eval(
             aligned_sentence += 1
             aligned_token += sum(1 for _ in gold if not ignore_punct or not is_punctuation(_["upos"]))
 
-        gold_text = "".join(_["form"] for _ in gold)
         content_text = "".join(_["form"] for _ in content)
         if f_report:
             if gold_text == content_text:
@@ -313,6 +325,25 @@ def eval(
         "confusion_upos": confusion_upos,
         "confusion_deprel": confusion_deprel,
     }
+
+def parse_user_prompt(content: str) -> tuple:
+    m = USER_PROMPT_SENTENCE_PATTERN.search(content)
+    if m:
+        input_text = m.group(1)
+    else:
+        input_text = None
+    m = USER_PROMPT_WORDS_PATTERN.search(content)
+    if m:
+        input_tokens = [_.split("\t") for _ in m.group(1).rstrip("\n").split("\n")]
+        if len(input_tokens[0]) > 1:
+            input_tokens = [[i, r[0]] for i, r in enumerate(input_tokens, 1)]
+        elif len(input_tokens[0]) >= 2:
+            input_tokens = [r[1:] for r in input_tokens]
+        if not input_text:
+            gold_text = "".join(r[0] for r in input_tokens)
+    else:
+        input_tokens = None
+    return input_text, input_tokens
 
 
 def parse_records(content: str, index_field: int, stop_on_error: bool = False) -> list[dict]:

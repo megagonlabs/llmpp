@@ -135,7 +135,7 @@ def eval(
         gold_sentence += 1
         assert "gold" in result, f"Inference result not saved in line #{line_index}"
         gold = parse_records(result["gold"], index_field, stop_on_error)
-        gold_text = input_text or "".join(_.get("form", "") for _ in gold)
+        gold_text = "".join(_["form"] for _ in gold)
 
         content = parse_records(result["content"], index_field, stop_on_error)
         if len(gold) == len(content):
@@ -156,7 +156,7 @@ def eval(
 
         form_recoveries = []
         for g, c in zip(gold, content):
-            if c.get("form") != g.get("form"):
+            if c["form"] != g["form"]:
                 form_recoveries.append(f'form recovery: {c["index"]}, {json.dumps(c["form"], ensure_ascii=False)} -> {json.dumps(g["form"], ensure_ascii=False)}')
                 c["form"] = g["form"]
                 recovered_form_token += 1
@@ -167,13 +167,13 @@ def eval(
             aligned_sentence += 1
             aligned_token += sum(1 for _ in gold if not ignore_punct or not is_punctuation(_["upos"]))
 
-        content_text = "".join(_.get("form", "") for _ in content)
+        content_text = "".join(_["form"] for _ in content)
         if f_report:
             if gold_text == content_text:
-                print("=", gold_text, file=f_report)
+                print("=", gold_text.strip() or input_text, file=f_report)
             else:
-                print("<", " ".join(_.get("form", "") for _ in gold), file=f_report)
-                print(">", " ".join(_.get("form", "") for _ in content), file=f_report)
+                print("<", " ".join(_["form"] for _ in gold), file=f_report)
+                print(">", " ".join(_["form"] for _ in content), file=f_report)
             print(*index_recoveries, *form_recoveries, sep="\n", file=f_report)
 
         # evaluate dependency by checking offset + form 
@@ -184,7 +184,7 @@ def eval(
             for r in records:
                 r["index"] = offset
                 offsets[offset] = r
-                offset += len(r.get("form", ""))
+                offset += len(r["form"])
             for r in records:
                 if r["head"] == 0:
                     r["head"] = None
@@ -203,7 +203,7 @@ def eval(
                 continue
             if offset in content_offsets:
                 c = content_offsets[offset]
-                if g.get("form") == c.get("form"):
+                if g["form"] == c["form"]:
                     confusion_upos[g.get("upos", "")][c.get("upos", "")] += 1
                     confusion_deprel[g["deprel"]][c.get("deprel", "")] += 1
                     correct_form_token += 1
@@ -211,7 +211,7 @@ def eval(
                         correct_upos_token += 1
                     else:
                         correct_upos = False
-                    if g["head"] and c["head"] and g["head"]["index"] == c["head"]["index"] and g["head"].get("form") == c["head"].get("form") or g["head"] is None and c["head"] is None:
+                    if g["head"] and c["head"] and g["head"]["index"] == c["head"]["index"] and g["head"]["form"] == c["head"]["form"] or g["head"] is None and c["head"] is None:
                         correct_head_token += 1
                         if use_deprel_subtypes:
                             g_deprel = g["deprel"]
@@ -247,15 +247,15 @@ def eval(
             correct_head_deprel_sentence += 1
         
         if f_conllu:
-            print(f"# text = {input_text or gold_text}", file=f_conllu)
+            print(f"# text = {gold_text.strip() or input_text}", file=f_conllu)
             index_map = {r["index"]:i for i, r in enumerate(content, 1)}
             for _, (r, i) in enumerate(zip(content, input_tokens), 1):
                 index = index_map[r["index"]]
                 head = index_map[r["head"]["index"]] if r["deprel"] != "root" else 0
-                form = r.get("form") or i[0]
+                form = i[0] if r["form"] == " " else r["form"]
                 upos = r["upos"] if "upos" in r else (i[1] if len(i) > 1 else "_")
                 deprel = r["deprel"]
-                misc = "SpaceAfter=No" if form == form.rstrip() and _ < len(content) and _ < len(input_tokens) else "_"
+                misc = "SpaceAfter=No" if form[-1] == " " and _ < len(content) and _ < len(input_tokens) else "_"
                 print(index, form, "_", upos, "_", "_", head, deprel, "_", misc, sep="\t", file=f_conllu)
             print(file=f_conllu)
 
@@ -355,9 +355,9 @@ def parse_records(content: str, index_field: int, stop_on_error: bool = False) -
         try:
             assert field_num == len(r)
             if field_num == 3:
-                records.append({"index": int(r[0]), "head": int(r[1]), "deprel": r[2]})
+                records.append({"index": int(r[0]), "form": " ", "head": int(r[1]), "deprel": r[2]})
             elif field_num == 4:
-                records.append({"index": int(r[0]), "upos": r[1], "head": int(r[2]), "deprel": r[3]})
+                records.append({"index": int(r[0]), "form": " ", "upos": r[1], "head": int(r[2]), "deprel": r[3]})
                 # records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "head": int(r[2]), "deprel": r[3]})
             elif field_num == 5:
                 if f2_isdigit:
@@ -388,13 +388,11 @@ def parse_records(content: str, index_field: int, stop_on_error: bool = False) -
 
 
 def reporting_fields(r: dict) -> list:
-    fields = [r["index"]]
-    if "form" in r:
-        fields.append(r["form"])
+    fields = [r["index"], r["form"]]
     if "upos" in r:
         fields.append(r["upos"])
     if r["head"]:
-        fields += [r["head"]["index"], r["head"]["form"], r["deprel"]] if "form" in r["head"] else [r["head"]["index"], r["deprel"]]
+        fields += [r["head"]["index"], r["head"]["form"], r["deprel"]]
     else:
         fields += [-1, "ROOT", "root"]
     return fields

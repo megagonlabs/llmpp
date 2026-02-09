@@ -136,11 +136,6 @@ def eval(
         assert "gold" in result, f"Inference result not saved in line #{line_index}"
         gold = parse_records(result["gold"], index_field, stop_on_error)
         gold_text = input_text or "".join(_["form"] for _ in gold)
-        if input_tokens:
-            for g, i in zip(gold, input_tokens):
-                g["form"] = i[0]
-                if len(i) >= 2:
-                    g["upos"] = i[1]
 
         content = parse_records(result["content"], index_field, stop_on_error)
         if len(gold) == len(content):
@@ -250,15 +245,18 @@ def eval(
             correct_head_deprel_sentence += 1
         
         if f_conllu:
-            print(f"# text = {gold_text}", file=f_conllu)
+            print(f"# text = {input_text or gold_text}", file=f_conllu)
+            print(input_tokens, file=f_conllu)
+            print(gold, file=f_conllu)
+            print(content, file=f_conllu)
             index_map = {r["index"]:i for i, r in enumerate(content, 1)}
-            for r in content:
+            for r, i in zip(content, input_tokens):
                 index = index_map[r["index"]]
                 head = index_map[r["head"]["index"]] if r["deprel"] != "root" else 0
-                form = r["form"].rstrip()
-                upos = r["upos"]
+                form = r["form"] or i[0]
+                upos = r["upos"] or (i[1] if len(i) > 1 else "_")
                 deprel = r["deprel"]
-                misc = "SpaceAfter=No" if form == r["form"] else "_"
+                misc = "SpaceAfter=No" if form == form.rstrip() else "_"
                 print(index, form, "_", upos, "_", "_", head, deprel, "_", misc, sep="\t", file=f_conllu)
             print(file=f_conllu)
 

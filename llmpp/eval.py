@@ -387,17 +387,17 @@ def parse_records(content: str, index_field: int, stop_on_error: bool = False) -
             r["head"] = len(records)
         elif r["head"] == 0 and r["deprel"] != "root":
             r["deprel"] = "root"
-        if not r["form"]:
-            r["form"] = None
     return records
 
 
 def reporting_fields(r: dict) -> list:
-    fields = [r["index"], r["form"]]
+    fields = [r["index"]]
+    if "form" in r:
+        fields.append(r["form"])
     if "upos" in r:
         fields.append(r["upos"])
     if r["head"]:
-        fields += [r["head"]["index"], r["head"]["form"], r["deprel"]]
+        fields += [r["head"]["index"], r["head"]["form"], r["deprel"]] if "form" in r["head"] else [r["head"]["index"], r["deprel"]]
     else:
         fields += [-1, "ROOT", "root"]
     return fields

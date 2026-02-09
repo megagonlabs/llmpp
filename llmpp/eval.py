@@ -248,9 +248,6 @@ def eval(
         
         if f_conllu:
             print(f"# text = {input_text or gold_text}", file=f_conllu)
-            print(input_tokens, file=f_conllu)
-            print(gold, file=f_conllu)
-            print(content, file=f_conllu)
             index_map = {r["index"]:i for i, r in enumerate(content, 1)}
             for r, i in zip(content, input_tokens):
                 index = index_map[r["index"]]

@@ -249,13 +249,13 @@ def eval(
         if f_conllu:
             print(f"# text = {input_text or gold_text}", file=f_conllu)
             index_map = {r["index"]:i for i, r in enumerate(content, 1)}
-            for r, i in zip(content, input_tokens):
+            for _, (r, i) in enumerate(zip(content, input_tokens), 1):
                 index = index_map[r["index"]]
                 head = index_map[r["head"]["index"]] if r["deprel"] != "root" else 0
                 form = r.get("form") or i[0]
                 upos = r["upos"] if "upos" in r else (i[1] if len(i) > 1 else "_")
                 deprel = r["deprel"]
-                misc = "SpaceAfter=No" if form == form.rstrip() else "_"
+                misc = "SpaceAfter=No" if form == form.rstrip() and _ < len(content) and _ < len(input_tokens) else "_"
                 print(index, form, "_", upos, "_", "_", head, deprel, "_", misc, sep="\t", file=f_conllu)
             print(file=f_conllu)
 

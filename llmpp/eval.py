@@ -30,15 +30,11 @@ def main():
     args = parse_args()
     for completion_results_jsonl in args.completion_results_jsonl_files:
         try:
-            if completion_results_jsonl.endswith(".jsonl"):
-                base_path = Path(completion_results_jsonl)
-                output_eval_json_path = f"{base_path.parent}/{base_path.stem}.eval.json"
-                output_eval_ignore_punct_json_path = f"{base_path.parent}/{base_path.stem}.eval.ignore-punct.json"
-                output_report_path = f"{base_path.parent}/{base_path.stem}.eval.report"
-            else:
-                output_eval_json_path = f"{base_path}.eval.json"
-                output_eval_ignore_punct_json_path = f"{base_path}.eval.ignore-punct.json"
-                output_report_path = f"{base_path}.eval.report"
+            base_path = Path(completion_results_jsonl)
+            output_eval_json_path = f"{base_path.parent}/{base_path.stem}.eval.json"
+            output_eval_ignore_punct_json_path = f"{base_path.parent}/{base_path.stem}.eval.ignore-punct.json"
+            output_report_path = f"{base_path.parent}/{base_path.stem}.eval.report"
+            output_conllu_path = f"{base_path.parent}/{base_path.stem}.eval.conllu"
             config = {
                 "src": completion_results_jsonl,
                 "use_deprel_subtypes": args.use_deprel_subtypes,
@@ -56,8 +52,8 @@ def main():
                 with open(table_jsonl_path, "r", encoding="utf8") as fin:
                     completion_results = [json.loads(_)["messages"] for _ in fin]
 
-            with open(output_report_path, "w", encoding="utf8") as f_report:
-                stats = eval(completion_results, args.index_field, args.use_deprel_subtypes, f_report, ignore_punct=False, stop_on_error=args.stop_on_error)
+            with open(output_report_path, "w", encoding="utf8") as f_report, open(output_conllu_path, "w", encoding="utf8") as f_conllu:
+                stats = eval(completion_results, args.index_field, args.use_deprel_subtypes, f_report, f_conllu, ignore_punct=False, stop_on_error=args.stop_on_error)
             stats["config"] = config
             stats["config"]["ignore_punct"] = False
             with open(output_eval_json_path, "w", encoding="utf8") as f_eval:
@@ -94,6 +90,7 @@ def eval(
     index_field: int,
     use_deprel_subtypes: bool,
     f_report: IO,
+    f_conllu: IO,
     ignore_punct: bool = False,
     stop_on_error: bool = False,
     debug: bool = False,
@@ -240,18 +237,17 @@ def eval(
         if correct_head_deprel:
             correct_head_deprel_sentence += 1
         
-        if debug:
-            text = "".join(r["form"] for r in content)
-            print(f"# text = {text}")
-            index_map = {r["index"]:i for i, r in enumerate(content, 1)}
-            for r in content:
-                index = index_map[r["index"]]
-                head = index_map[r["head"]["index"]] if r["deprel"] != "root" else 0
-                form = r["form"].rstrip()
-                upos = r["upos"]
-                deprel = r["deprel"]
-                print(index, form, "_", upos, "_", "_", head, deprel, "_", "_", sep="\t")
-            print()
+        print(f"# text = {gold_text}", file=f_conllu)
+        index_map = {r["index"]:i for i, r in enumerate(content, 1)}
+        for r in content:
+            index = index_map[r["index"]]
+            head = index_map[r["head"]["index"]] if r["deprel"] != "root" else 0
+            form = r["form"].rstrip()
+            upos = r["upos"]
+            deprel = r["deprel"]
+            misc = "SpaceAfter=No" if form == r["form"] else "_"
+            print(index, form, "_", upos, "_", "_", head, deprel, "_", misc, sep="\t", file=f_conllu)
+        print(file=f_conllu)
 
         single_root = is_single_root(content, f_report)
         no_loop = has_no_loop(content, f_report)

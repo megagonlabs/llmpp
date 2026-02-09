@@ -326,6 +326,7 @@ def eval(
         "confusion_deprel": confusion_deprel,
     }
 
+
 def parse_user_prompt(content: str) -> tuple:
     m = USER_PROMPT_SENTENCE_PATTERN.search(content)
     if m:
@@ -336,11 +337,9 @@ def parse_user_prompt(content: str) -> tuple:
     if m:
         input_tokens = [_.split("\t") for _ in m.group(1).rstrip("\n").split("\n")]
         if len(input_tokens[0]) > 1:
-            input_tokens = [[i, r[0]] for i, r in enumerate(input_tokens, 1)]
-        elif len(input_tokens[0]) >= 2:
             input_tokens = [r[1:] for r in input_tokens]
         if not input_text:
-            gold_text = "".join(r[0] for r in input_tokens)
+            input_text = "".join(r[0] for r in input_tokens)
     else:
         input_tokens = None
     return input_text, input_tokens

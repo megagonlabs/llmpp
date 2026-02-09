@@ -358,9 +358,9 @@ def parse_records(content: str, index_field: int, stop_on_error: bool = False) -
         try:
             assert field_num == len(r)
             if field_num == 3:
-                records.append({"index": int(r[0]), "form": "", "head": int(r[1]), "deprel": r[2]})
+                records.append({"index": int(r[0]), "head": int(r[1]), "deprel": r[2]})
             elif field_num == 4:
-                records.append({"index": int(r[0]), "form": "", "upos": r[1], "head": int(r[2]), "deprel": r[3]})
+                records.append({"index": int(r[0]), "upos": r[1], "head": int(r[2]), "deprel": r[3]})
                 # records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "head": int(r[2]), "deprel": r[3]})
             elif field_num == 5:
                 if f2_isdigit:
@@ -378,7 +378,7 @@ def parse_records(content: str, index_field: int, stop_on_error: bool = False) -
             if stop_on_error:
                 raise e
             break
-    if records:  # eliminate tail whitespaces of last token
+    if records and "form" in records[-1]:  # eliminate tail whitespaces of last token
         records[-1]["form"] = records[-1]["form"].rstrip(" ")
     for _, r in enumerate(records):
         if r["head"] < 0:

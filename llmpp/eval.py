@@ -375,7 +375,7 @@ def parse_records(content: str, index_field: int, stop_on_error: bool = False) -
             if stop_on_error:
                 raise e
             break
-    if records and "form" in records[-1]:  # eliminate tail whitespaces of last token
+    if records and records[-1]["form"] != " ":  # eliminate tail whitespaces of last token
         records[-1]["form"] = records[-1]["form"].rstrip(" ")
     for _, r in enumerate(records):
         if r["head"] < 0:

@@ -255,8 +255,8 @@ def eval(
                 form = i[0] if r["form"] == " " else r["form"]
                 upos = r["upos"] if "upos" in r else (i[1] if len(i) > 1 else "_")
                 deprel = r["deprel"]
-                misc = "SpaceAfter=No" if form[-1] == " " and _ < len(content) and _ < len(input_tokens) else "_"
-                print(index, form, "_", upos, "_", "_", head, deprel, "_", misc, sep="\t", file=f_conllu)
+                misc = "SpaceAfter=No" if form[-1] != " " and _ < len(content) and _ < len(input_tokens) else "_"
+                print(index, form.rstrip(), "_", upos, "_", "_", head, deprel, "_", misc, sep="\t", file=f_conllu)
             print(file=f_conllu)
 
         single_root = is_single_root(content, f_report)
@@ -355,9 +355,9 @@ def parse_records(content: str, index_field: int, stop_on_error: bool = False) -
         try:
             assert field_num == len(r)
             if field_num == 3:
-                records.append({"index": int(r[0]), "head": int(r[1]), "deprel": r[2]})
+                records.append({"index": int(r[0]), "form": " ", "head": int(r[1]), "deprel": r[2]})
             elif field_num == 4:
-                records.append({"index": int(r[0]), "upos": r[1], "head": int(r[2]), "deprel": r[3]})
+                records.append({"index": int(r[0]), "form": " ", "upos": r[1], "head": int(r[2]), "deprel": r[3]})
                 # records.append({"index": int(r[index_field]), "form": r[form_field].replace("　", " "), "head": int(r[2]), "deprel": r[3]})
             elif field_num == 5:
                 if f2_isdigit:
@@ -375,9 +375,6 @@ def parse_records(content: str, index_field: int, stop_on_error: bool = False) -
             if stop_on_error:
                 raise e
             break
-    for r in records:
-        if "form" not in r:
-            r["form"] = " "
     if records and records[-1]["form"] != " ":  # eliminate tail whitespaces of last token
         records[-1]["form"] = records[-1]["form"].rstrip(" ")
     for _, r in enumerate(records):

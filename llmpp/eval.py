@@ -172,8 +172,8 @@ def eval(
             if gold_text == content_text:
                 print("=", gold_text, file=f_report)
             else:
-                print("<", " ".join(_["form"] for _ in gold), file=f_report)
-                print(">", " ".join(_["form"] for _ in content), file=f_report)
+                print("<", " ".join(_.get("form", "") for _ in gold), file=f_report)
+                print(">", " ".join(_.get("form", "") for _ in content), file=f_report)
             print(*index_recoveries, *form_recoveries, sep="\n", file=f_report)
 
         # evaluate dependency by checking offset + form 

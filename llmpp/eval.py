@@ -65,7 +65,7 @@ def main():
             else:
                 print("no content", completion_results_jsonl, file=sys.stderr)
 
-            stats = eval(completion_results, args.index_field, args.use_deprel_subtypes, None, ignore_punct=True)
+            stats = eval(completion_results, args.index_field, args.use_deprel_subtypes, None, None, ignore_punct=True)
             stats["config"] = config
             stats["config"]["ignore_punct"] = True
             with open(output_eval_ignore_punct_json_path, "w", encoding="utf8") as f_eval:
@@ -237,17 +237,18 @@ def eval(
         if correct_head_deprel:
             correct_head_deprel_sentence += 1
         
-        print(f"# text = {gold_text}", file=f_conllu)
-        index_map = {r["index"]:i for i, r in enumerate(content, 1)}
-        for r in content:
-            index = index_map[r["index"]]
-            head = index_map[r["head"]["index"]] if r["deprel"] != "root" else 0
-            form = r["form"].rstrip()
-            upos = r["upos"]
-            deprel = r["deprel"]
-            misc = "SpaceAfter=No" if form == r["form"] else "_"
-            print(index, form, "_", upos, "_", "_", head, deprel, "_", misc, sep="\t", file=f_conllu)
-        print(file=f_conllu)
+        if f_conllu:
+            print(f"# text = {gold_text}", file=f_conllu)
+            index_map = {r["index"]:i for i, r in enumerate(content, 1)}
+            for r in content:
+                index = index_map[r["index"]]
+                head = index_map[r["head"]["index"]] if r["deprel"] != "root" else 0
+                form = r["form"].rstrip()
+                upos = r["upos"]
+                deprel = r["deprel"]
+                misc = "SpaceAfter=No" if form == r["form"] else "_"
+                print(index, form, "_", upos, "_", "_", head, deprel, "_", misc, sep="\t", file=f_conllu)
+            print(file=f_conllu)
 
         single_root = is_single_root(content, f_report)
         no_loop = has_no_loop(content, f_report)

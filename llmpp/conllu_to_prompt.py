@@ -177,7 +177,8 @@ CONLLU_TOKEN_PATTERN = re.compile(
     r"^([1-9][0-9]*)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([^\t]+)\t([0-9]+|_)\t([^\t]+)\t([^\t]+)\t([^\t]*)$"
 )
 CONLLU_TOKEN_SKIP_PATTERN = re.compile(
-    r"^(([1-9][0-9]*[\-.][1-9][0-9]*)\t|# (sent_id =|doc_id =|newdoc[ _]id =|newpar[ _]id =||lang =|meta_type =|text_en =|text_ortho =|translit =|source =|generator =|udpipe_model =|note =|auto =|ToDoOrigText =|ToDoOrigtext =|spelling =|genre =|document_genre =|meta_source =|orig_text =|notes =|phonetic_text =|meta_description =|at|orig_file_sentence|duplicate:|First word|31.01.23|WARNING:|جو is PART|word|this sentence|note:|speaker|reference|citation_hierarchy|token_id|token_id_[0-9]+-[0-9]+|Zwierlein_lines) ).+$|^#$|^0(.+)$|^# Tectogrammatical annotation available(.+)$|^# (layer=|citation_text=|citation_chapter=).+$"
+    r"^(([1-9][0-9]*[\-.][1-9][0-9]*)\t|#(?! text = ))"
+    # r"^(([1-9][0-9]*[\-.][1-9][0-9]*)\t|# (sent_id =|doc_id =|newdoc[ _]id =|newpar[ _]id =||lang =|meta_type =|text_en =|text_ortho =|translit =|source =|generator =|udpipe_model =|note =|auto =|ToDoOrigText =|ToDoOrigtext =|spelling =|genre =|document_genre =|meta_source =|orig_text =|notes =|phonetic_text =|meta_description =|at|orig_file_sentence|duplicate:|First word|31.01.23|WARNING:|جو is PART|word|this sentence|note:|speaker|reference|citation_hierarchy|token_id|token_id_[0-9]+-[0-9]+|Zwierlein_lines) ).+$|^#$|^0(.+)$|^# Tectogrammatical annotation available(.+)$|^# (layer=|citation_text=|citation_chapter=).+$"
 )
 CONLLU_BUNSETU_PATTERN = re.compile(r"BunsetuBILabel=(.)")
 

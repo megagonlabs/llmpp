@@ -174,6 +174,8 @@ cython_debug/
 log*
 _old/
 *bccwj*
+*nikkei*
+*cejc*
 ctb*
 ptb*
 tmp*
@@ -185,3 +187,9 @@ tmp*
 /models/
 /EVALB/
 /RL*/
+/olmo2*
+/eval/
+/ud-treebanks*
+/UD_*
+/Universal@*
+/EvaLatin/

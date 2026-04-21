@@ -223,6 +223,7 @@ def eval(
                     else:
                         correct_head = False
                         correct_head_deprel = False
+                        confusion_deprel[g_deprel][None] += 1
                 else:
                     if "upos" in g:
                         confusion_upos[g["upos"]][None] += 1

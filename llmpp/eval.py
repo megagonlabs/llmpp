@@ -201,11 +201,11 @@ def eval(
         for offset, g in gold_offsets.items():
             if ignore_punct and is_punctuation(g.get("upos", "")):
                 continue
+            g_deprel = g["deprel"] if use_deprel_subtypes else g["deprel"].split(":")[0]
             if offset in content_offsets:
                 c = content_offsets[offset]
                 if g["form"] == c["form"]:
                     confusion_upos[g.get("upos", "")][c.get("upos", "")] += 1
-                    confusion_deprel[g["deprel"]][c.get("deprel", "")] += 1
                     correct_form_token += 1
                     if "upos" in gold[0] and g["upos"] == c.get("upos", ""):
                         correct_upos_token += 1
@@ -213,12 +213,8 @@ def eval(
                         correct_upos = False
                     if g["head"] and c["head"] and g["head"]["index"] == c["head"]["index"] and g["head"]["form"] == c["head"]["form"] or g["head"] is None and c["head"] is None:
                         correct_head_token += 1
-                        if use_deprel_subtypes:
-                            g_deprel = g["deprel"]
-                            c_deprel = c["deprel"]
-                        else:
-                            g_deprel = g["deprel"].split(":")[0]
-                            c_deprel = c["deprel"].split(":")[0]
+                        c_deprel = c["deprel"] if use_deprel_subtypes else c["deprel"].split(":")[0]
+                        confusion_deprel[g_deprel][c_deprel] += 1
                         if g_deprel == c_deprel:
                             correct_head_deprel_token += 1
                             correct_offsets.add(offset)
@@ -230,12 +226,12 @@ def eval(
                 else:
                     if "upos" in g:
                         confusion_upos[g["upos"]][None] += 1
-                    confusion_deprel[g["deprel"]][None] += 1
+                    confusion_deprel[g_deprel][None] += 1
                     correct_form = False
             else:
                 if "upos" in g:
                     confusion_upos[g["upos"]][None] += 1
-                confusion_deprel[g["deprel"]][None] += 1
+                confusion_deprel[g_deprel][None] += 1
                 correct_form = False
         if correct_form:
             correct_form_sentence += 1

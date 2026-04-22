@@ -123,7 +123,7 @@ def main():
         r = deprel_stats[key]["recall"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["gold"] or 1)
         p = deprel_stats[key]["precision"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["content"] or 1)
         deprel_stats[key]["f1"]["*"] = f1(r, p)
-        head_stats[key] = calc_stats(calc_head_stats(result["confusion_deprel"], keys=deprel_list, key_pattern=r"^([^:]+)")
+        head_stats[key] = calc_head_stats(result["confusion_deprel"], keys=deprel_list, key_pattern=r"^([^:]+)")
         r = head_stats[key]["recall"]["*"] = result["token"]["correct_head"] / (result["token"]["gold"] or 1)
         p = head_stats[key]["precision"]["*"] = result["token"]["correct_head"] / (result["token"]["content"] or 1)
         head_stats[key]["f1"]["*"] = f1(r, p)

@@ -35,7 +35,7 @@ def calc_stats(stats, keys=None, key_pattern=None):
             gold_stats[gold] += c
             if content != "null":
                 content_total += c
-                content_stats[content] += c
+                content_stats[gold] += c
                 if gold == content:
                     correct_total += c
                     correct_stats[gold] += c

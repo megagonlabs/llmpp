@@ -33,12 +33,12 @@ def calc_stats(stats, keys=None, key_pattern=None):
                 content = re.search(key_pattern, content).group(1)
             gold_total += c
             gold_stats[gold] += c
-            if content in gold_keys:
+            if content != "null":
                 content_total += c
                 content_stats[content] += c
-            if gold == content:
-                correct_total += c
-                correct_stats[gold] += c
+                if gold == content:
+                    correct_total += c
+                    correct_stats[gold] += c
     recalls = {"*": correct_total / gold_total if gold_total else 0.}
     for key in gold_keys:
         recalls[key] = correct_stats.get(key, 0) / gold_stats[key] if gold_stats.get(key) else 0.

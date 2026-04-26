@@ -79,7 +79,7 @@ def main():
         r = deprel_stats[key]["recall"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["gold"] or 1)
         p = deprel_stats[key]["precision"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["content"] or 1)
         deprel_stats[key]["f1"]["*"] = f1(r, p)
-        head_stats[key] = calc_stats(result["confusion_deprel"], result["content_deprel"], keys=deprel_list, key_pattern=r"^([^:]+)", key_matcher=lambda g, c: (g == c if g == "root" else c != "-"))
+        head_stats[key] = calc_stats(result["confusion_deprel"], result["content_deprel"], keys=deprel_list, key_pattern=r"^([^:]+)", key_matcher=lambda g, c: (g == c if g == "root" else c not in ["-", "null"]))
         r = head_stats[key]["recall"]["*"] = result["token"]["correct_head"] / (result["token"]["gold"] or 1)
         p = head_stats[key]["precision"]["*"] = result["token"]["correct_head"] / (result["token"]["content"] or 1)
         head_stats[key]["f1"]["*"] = f1(r, p)

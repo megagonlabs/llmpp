@@ -125,6 +125,8 @@ def eval(
     recovered_form_token = 0
     confusion_upos = defaultdict(lambda: defaultdict(int))
     confusion_deprel = defaultdict(lambda: defaultdict(int))
+    content_upos = defaultdict(int)
+    content_deprel = defaultdict(int)
 
     for line_index, messages in enumerate(completion_results, 1):
         user_prompt = messages[-2]["content"]
@@ -211,7 +213,7 @@ def eval(
                         correct_upos_token += 1
                     else:
                         correct_upos = False
-                    c_deprel = c.get("deprel", "-") if use_deprel_subtypes else c.get("deprel", "-").split(":")[0]
+                    c_deprel = c.get("deprel", "") if use_deprel_subtypes else c.get("deprel", "").split(":")[0]
                     if g["head"] and c["head"] and g["head"]["index"] == c["head"]["index"] and g["head"]["form"] == c["head"]["form"] or g["head"] is None and c["head"] is None:
                         correct_head_token += 1
                         confusion_deprel[g_deprel][c_deprel] += 1
@@ -234,6 +236,9 @@ def eval(
                     confusion_upos[g["upos"]][None] += 1
                 confusion_deprel[g_deprel][None] += 1
                 correct_form = False
+        for c in content:
+            content_upos[c.get("upos", "")] += 1
+            content_deprel[c.get("deprel", "")] += 1
         if correct_form:
             correct_form_sentence += 1
         if correct_upos:
@@ -318,6 +323,8 @@ def eval(
         },
         "confusion_upos": confusion_upos,
         "confusion_deprel": confusion_deprel,
+        "content_upos": content_upos,
+        "content_deprel": content_deprel,
     }
 
 

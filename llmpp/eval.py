@@ -211,9 +211,9 @@ def eval(
                         correct_upos_token += 1
                     else:
                         correct_upos = False
+                    c_deprel = c.get("deprel", "-") if use_deprel_subtypes else c.get("deprel", "-").split(":")[0]
                     if g["head"] and c["head"] and g["head"]["index"] == c["head"]["index"] and g["head"]["form"] == c["head"]["form"] or g["head"] is None and c["head"] is None:
                         correct_head_token += 1
-                        c_deprel = c["deprel"] if use_deprel_subtypes else c["deprel"].split(":")[0]
                         confusion_deprel[g_deprel][c_deprel] += 1
                         if g_deprel == c_deprel:
                             correct_head_deprel_token += 1
@@ -223,7 +223,7 @@ def eval(
                     else:
                         correct_head = False
                         correct_head_deprel = False
-                        confusion_deprel[g_deprel]["-"] += 1
+                        confusion_deprel[g_deprel][c_deprel if g_deprel == "root" else "-"] += 1
                 else:
                     if "upos" in g:
                         confusion_upos[g["upos"]][None] += 1

@@ -238,7 +238,7 @@ def eval(
                 correct_form = False
         for c in content:
             content_upos[c.get("upos", "")] += 1
-            content_deprel[c.get("deprel", "")] += 1
+            content_deprel[c.get("deprel", "") if use_deprel_subtypes else c.get("deprel", "").split(":")[0]] += 1
         if correct_form:
             correct_form_sentence += 1
         if correct_upos:

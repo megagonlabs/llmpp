@@ -12,7 +12,7 @@ upos_list = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", 
 deprel_list = ["acl", "advcl", "advmod", "amod", "appos", "aux", "case", "cc", "ccomp", "clf", "compound", "conj", "cop", "csubj", "det", "dep", "discourse", "dislocated", "expl", "fixed", "flat", "goeswith", "iobj", "list", "mark", "nmod", "nsubj", "nummod", "obj", "obl", "orphan", "parataxis", "punct", "reparandum", "root", "vocative", "xcomp"]
 
 
-def calc_stats(stats, content_stats, keys=None, key_pattern=None, key_matcher=lambda g, c: (g == c)):
+def calc_stats(stats, content_stats, keys=None, key_pattern=None):
     gold_total = 0
     content_total = 0
     correct_total = 0
@@ -32,7 +32,7 @@ def calc_stats(stats, content_stats, keys=None, key_pattern=None, key_matcher=la
                 content = re.search(key_pattern, content).group(1)
             gold_total += c
             gold_stats[gold] += c
-            if key_matcher(gold, content):
+            if gold == content:
                 correct_total += c
                 correct_stats[gold] += c
     content_total = sum(content_stats.values())
@@ -44,6 +44,48 @@ def calc_stats(stats, content_stats, keys=None, key_pattern=None, key_matcher=la
     for key in gold_keys:
         assert correct_stats.get(key, 0) <= content_stats.get(key, 0), f"{key=}, {correct_stats.get(key, 0)=} > {content_stats.get(key, 0)=}"
         precisions[key] = correct_stats.get(key, 0) / content_stats[key] if content_stats.get(key) else 0.
+        f1s[key] = f1(recalls[key], precisions[key])
+    return {
+        "recall": recalls,
+        "precision": precisions,
+        "f1": f1s,
+    }
+
+
+def calc_head_stats(stats, content_stats, keys=None, key_pattern=None):
+    gold_total = 0
+    content_total = 0
+    correct_total = 0
+    gold_stats = defaultdict(int)
+    correct_gold = defaultdict(int)
+    correct_content = defaultdict(int)
+    if keys:
+        gold_keys = sorted(keys)
+    elif key_pattern:
+        gold_keys = sorted({re.search(key_pattern, k).group(1) for k in stats})
+    else:
+        gold_keys = sorted(stats.keys())
+    for gold, stat in stats.items():
+        if key_pattern:
+            gold = re.search(key_pattern, gold).group(1)
+        for content, c in stat.items():
+            if key_pattern:
+                content = re.search(key_pattern, content).group(1)
+            gold_total += c
+            gold_stats[gold] += c
+            if (gold == "root" and gold == content) or (gold != "root" and content not in ["-", "null"]):
+                correct_total += c
+                correct_gold[gold] += c
+                correct_content[content] += c
+    content_total = sum(content_stats.values())
+    recalls = {"*": correct_total / gold_total if gold_total else 0.}
+    for key in gold_keys:
+        recalls[key] = correct_gold.get(key, 0) / gold_stats[key] if gold_stats.get(key) else 0.
+    precisions = {"*": correct_total / content_total if content_total else 0.}
+    f1s = {}
+    for key in gold_keys:
+        assert correct_content.get(key, 0) <= content_stats.get(key, 0), f"{key=}, {correct_content.get(key, 0)=} > {content_stats.get(key, 0)=}"
+        precisions[key] = correct_content.get(key, 0) / content_stats[key] if content_stats.get(key) else 0.
         f1s[key] = f1(recalls[key], precisions[key])
     return {
         "recall": recalls,
@@ -80,7 +122,7 @@ def main():
         r = deprel_stats[key]["recall"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["gold"] or 1)
         p = deprel_stats[key]["precision"]["*"] = result["token"]["correct_head_deprel"] / (result["token"]["content"] or 1)
         deprel_stats[key]["f1"]["*"] = f1(r, p)
-        head_stats[key] = calc_stats(result["confusion_deprel"], result["content_deprel"], keys=deprel_list, key_pattern=r"^([^:]+)", key_matcher=lambda g, c: (g == c if g == "root" else c not in ["-", "null"]))
+        head_stats[key] = calc_head_stats(result["confusion_deprel"], result["content_deprel"], keys=deprel_list, key_pattern=r"^([^:]+)")
         r = head_stats[key]["recall"]["*"] = result["token"]["correct_head"] / (result["token"]["gold"] or 1)
         p = head_stats[key]["precision"]["*"] = result["token"]["correct_head"] / (result["token"]["content"] or 1)
         head_stats[key]["f1"]["*"] = f1(r, p)

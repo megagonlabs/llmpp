@@ -42,6 +42,7 @@ def calc_stats(stats, content_stats, keys=None, key_pattern=None, key_matcher=la
     precisions = {"*": correct_total / content_total if content_total else 0.}
     f1s = {}
     for key in gold_keys:
+        assert correct_stats.get(key, 0) <= content_stats.get(key, 0), f"{key=}, {correct_stats.get(key, 0)=} > {content_stats.get(key, 0)=}"
         precisions[key] = correct_stats.get(key, 0) / content_stats[key] if content_stats.get(key) else 0.
         f1s[key] = f1(recalls[key], precisions[key])
     return {

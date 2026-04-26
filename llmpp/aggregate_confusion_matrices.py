@@ -32,7 +32,7 @@ def calc_stats(stats, content_stats, keys=None, key_pattern=None, key_matcher=la
                 content = re.search(key_pattern, content).group(1)
             gold_total += c
             gold_stats[gold] += c
-            if gold == content:
+            if key_matcher(gold, content):
                 correct_total += c
                 correct_stats[gold] += c
     content_total = sum(content_stats.values())

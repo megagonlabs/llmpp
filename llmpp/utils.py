@@ -93,7 +93,7 @@ def select_last_bracketing_line(content: str) -> str | None:
         return ""
 
 
-def select_tsv_part(content: str, tsv_index: None | int = -1, min_columns: int = 3, begin_regex: str | None = None, end_regex: str | None = None) -> list[list[list[str]]] | list[list[str]] | None:
+def select_tsv_part(content: str, tsv_index: None | int = -1, min_columns: int = 3, begin_regex: str | None = None, end_regex: str | None = None, use_first_section: bool = False) -> list[list[list[str]]] | list[list[str]] | None:
     if begin_regex:
         m = re.search(begin_regex, content)
         if m:
@@ -110,6 +110,8 @@ def select_tsv_part(content: str, tsv_index: None | int = -1, min_columns: int =
             if begin_of_tsv is not None:
                 tsv_parts.append(rows[begin_of_tsv:_])
                 begin_of_tsv = None
+                if use_first_section:
+                    break
         elif begin_of_tsv is None:
             begin_of_tsv = _
     if begin_of_tsv is not None:

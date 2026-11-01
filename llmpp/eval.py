@@ -14,7 +14,7 @@ def parse_args() -> Namespace:
     parser: ArgumentParser = ArgumentParser()
     parser.add_argument("completion_results_jsonl_files", nargs="+")
     parser.add_argument("--format", "--f", type=str, choices=["auto", "tsv", "bracketing"], default="auto")
-    parser.add_argument("--use_first_section", "--f", action="store_true")
+    parser.add_argument("--use_first_section", "--fs", action="store_true")
     parser.add_argument("--no_terminal_bracketing", "--nt", action="store_true")
     parser.add_argument("--apply_bracketing_recovery", "--r", action="store_true")
     parser.add_argument("--index_field", "--i", default=0, type=int)

@@ -259,7 +259,7 @@ def eval(
             index_map = {r["index"]:i for i, r in enumerate(content, 1)}
             for _, (r, i) in enumerate(zip(content, input_tokens), 1):
                 index = index_map[r["index"]]
-                head = index_map[r["head"]["index"]] if r["deprel"] != "root" else 0
+                head = index_map[r["head"]["index"]] if r["head"] and r["deprel"] != "root" else 0
                 form = i[0] if r["form"] == " " else r["form"]
                 upos = r["upos"] if "upos" in r else (i[1] if len(i) > 1 else "_")
                 deprel = r["deprel"]

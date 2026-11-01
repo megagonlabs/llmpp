@@ -15,6 +15,7 @@ def parse_args() -> Namespace:
     parser.add_argument("completion_results_jsonl_files", nargs="+")
     parser.add_argument("--format", "--f", type=str, choices=["auto", "tsv", "bracketing"], default="auto")
     parser.add_argument("--use_first_section", "--fs", action="store_true")
+    parser.add_argument("--match_length", "--ml", action="store_true")
     parser.add_argument("--no_terminal_bracketing", "--nt", action="store_true")
     parser.add_argument("--apply_bracketing_recovery", "--r", action="store_true")
     parser.add_argument("--index_field", "--i", default=0, type=int)
@@ -59,7 +60,7 @@ def main():
                     completion_results = [json.loads(_)["messages"] for _ in fin]
 
             with open(output_report_path, "w", encoding="utf8") as f_report, open(output_conllu_path, "w", encoding="utf8") as f_conllu:
-                stats = eval(completion_results, args.index_field, args.use_deprel_subtypes, f_report, f_conllu, ignore_punct=False, stop_on_error=args.stop_on_error, use_first_section=args.use_first_section)
+                stats = eval(completion_results, args.index_field, args.use_deprel_subtypes, f_report, f_conllu, ignore_punct=False, stop_on_error=args.stop_on_error, use_first_section=args.use_first_section, match_length=args.match_length)
             stats["config"] = config
             stats["config"]["ignore_punct"] = False
             with open(output_eval_json_path, "w", encoding="utf8") as f_eval:
@@ -100,6 +101,7 @@ def eval(
     ignore_punct: bool = False,
     stop_on_error: bool = False,
     use_first_section: bool = False,
+    match_length: bool = False,
 ) -> dict:
     gold_sentence = 0
     gold_token = 0
@@ -142,6 +144,8 @@ def eval(
         gold_text = "".join(_["form"] for _ in gold)
 
         content = parse_records(result["content"], index_field, stop_on_error, use_first_section=use_first_section)
+        if match_length:
+            content = content[:len(gold)]
         if len(gold) == len(content):
             content_sentence += 1
         else:

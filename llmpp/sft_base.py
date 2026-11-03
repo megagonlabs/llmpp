@@ -152,7 +152,8 @@ def run_sft(config, prepare_model_func):
         logger.debug(f"""
 ======= probing model layers begin =======
 {lines}
-======= probing model layers end =======""")
+======= probing model layers end =======
+{output_dir}""")
         if hasattr(trainer.model, "print_trainable_parameters"):
             trainer.model.print_trainable_parameters()
 

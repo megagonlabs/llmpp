@@ -152,8 +152,7 @@ def run_sft(config, prepare_model_func):
         logger.debug(f"""
 ======= probing model layers begin =======
 {lines}
-======= probing model layers end =======
-{output_dir}""")
+======= probing model layers end =======""")
         if hasattr(trainer.model, "print_trainable_parameters"):
             trainer.model.print_trainable_parameters()
 
@@ -171,7 +170,8 @@ def run_sft(config, prepare_model_func):
         logger.debug(f"""
 ======= probing train data begin =======
 {lines}
-======= probing train data end =======""")
+======= probing train data end =======
+{output_dir}""")
 
         trainer.train()
         if is_rank0:

@@ -24,7 +24,7 @@ sft_config_args:
   gradient_accumulation_steps: 8
   gradient_checkpointing: true
   num_train_epochs: 2
-  learning_rate: 1.0e-5
+  learning_rate: 1.0e-4
   save_strategy: "no"
   logging_steps: 0.01
   # eval_steps: 0.25

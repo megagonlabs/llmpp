@@ -33,7 +33,7 @@ if [[ "${target_jsonl}" == *-linearized-* ]] || [[ "${target_jsonl}" == *-bracke
     option="--r"
   fi
 else
-  option=""
+  option="--ml"
 fi
 python -m llmpp.${eval_type} ${option} ${eval_jsonl}
 python -m llmpp.dispatch_lines_by_pattern 'We will now perform [^.]+? on ([^.]+?) sentence\.\\n|language identification .+?"gold": "(.+?)\\n\\n' ${eval_jsonl}

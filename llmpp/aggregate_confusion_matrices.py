@@ -4,8 +4,9 @@ import sys
 
 from collections import defaultdict
 
+each_metrics_lines = 100
 
-model_path_pattern = re.compile(r"/(.+?)[-_]([0-9]+[Bb])-(?:stage|phase)([0-9]+)(?:-ingredient)?([0-9]*)-(?:step|iter)([0-9]+)(?:-tokens)?([0-9]*)B?([^_]*)_([^_/]+_[^_/]+)_([^./]+)")
+model_path_pattern = re.compile(r"/(.+?)[-_]([0-9]+[Bb])-(?:(stage|phase|mid)([0-9]+))(?:-(ingredient)([0-9]+))?-(step|iter)([0-9]+)(?:-(tokens)([0-9]+)B)?([^_]*)_([^_/]+_[^_/]+)_([^./]+)")
 
 upos_list = ["ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM", "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X"]
 
@@ -108,10 +109,14 @@ def main():
         m = model_path_pattern.search(target_path)
         model_name = m.group(1)
         model_size = m.group(2)
-        stage = int(m.group(3))
-        ingredient = int(m.group(4) or 0)
-        step = int(m.group(5))
-        num_tokens = int(m.group(6) or 0)
+        stage_title = m.group(3)
+        stage = int(m.group(4))
+        ingredient_title = int(m.group(5) or "")
+        ingredient = int(m.group(6) or 0)
+        step_title = m.group(7)
+        step = int(m.group(8))
+        num_tokens_title = m.group(9)
+        num_tokens = int(m.group(10) or 0)
         key = (model_name, model_size, stage, ingredient, step, num_tokens)
         with open(target_path, "r", encoding="utf8") as fin:
             result = json.load(fin)
@@ -157,7 +162,7 @@ def main():
         keys = sorted(stats.keys())
         labels = sorted(stats[keys[0]][metrics].keys())
         print(title)
-        print("Model", "Size", "Stage", "Ingredient", "Step", "Tokens", *labels, sep="\t")
+        print("model", "size", stage_title, ingredient_title, step_title, num_tokens_title, *labels, sep="\t")
         prev_ingredient = -1
         prev_step = 0
         prev_num_tokens = 0
@@ -175,6 +180,7 @@ def main():
             prev_step = step
             prev_num_tokens = num_tokens
             print(model_name, model_size, stage, ingredient, step, num_tokens, *(stat[metrics].get(label, 0.) for label in labels), sep="\t")
+        print("\n" * (each_metrics_lines - len(keys) - 2), end="")
 
 
 if __name__ == "__main__":

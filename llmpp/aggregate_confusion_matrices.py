@@ -104,6 +104,7 @@ def main():
     head_stats = {}
     total_stats = {}
     for target_path in sys.argv[1:]:
+        print(f"target_path: {target_path}", file=sys.stderr)
         m = model_path_pattern.search(target_path)
         model_name = m.group(1)
         model_size = m.group(2)

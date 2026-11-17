@@ -111,11 +111,11 @@ def main():
         model_size = m.group(2)
         stage_title = m.group(3)
         stage = int(m.group(4))
-        ingredient_title = int(m.group(5) or "")
+        ingredient_title = m.group(5) or ""
         ingredient = int(m.group(6) or 0)
         step_title = m.group(7)
         step = int(m.group(8))
-        num_tokens_title = m.group(9)
+        num_tokens_title = m.group(9) or ""
         num_tokens = int(m.group(10) or 0)
         key = (model_name, model_size, stage, ingredient, step, num_tokens)
         with open(target_path, "r", encoding="utf8") as fin:

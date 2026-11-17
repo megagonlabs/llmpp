@@ -177,7 +177,7 @@ def main():
     ]:
         keys = sorted(stats.keys())
         labels = sorted(stats[keys[0]][metrics].keys())
-        print(title, f"{treebank}_{template}", sep="\t")
+        print(title, "", f"{treebank}_{template}", sep="\t")
         print("model", "size", "stage", "ingredient", "step", "tokens", *labels, sep="\t")
         prev_stage_ingredient = (None, None)
         tokens = 0

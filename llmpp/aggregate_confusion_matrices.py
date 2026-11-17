@@ -12,7 +12,7 @@ step_multipliers = {
     "OLMo-2": {
         "7B": 4096,
     },
-    "llm-jp": {
+    "llm-jp-4": {
         "8b": {
             "phase1": 2048,
             "phase2": 8192,

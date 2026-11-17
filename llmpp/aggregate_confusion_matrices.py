@@ -111,7 +111,7 @@ def main():
         stage = int(m.group(3))
         ingredient = int(m.group(4) or 0)
         step = int(m.group(5))
-        num_tokens = int(m.group(6))
+        num_tokens = int(m.group(6) or 0)
         key = (model_name, model_size, stage, ingredient, step, num_tokens)
         with open(target_path, "r", encoding="utf8") as fin:
             result = json.load(fin)

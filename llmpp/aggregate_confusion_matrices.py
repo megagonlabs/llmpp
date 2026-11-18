@@ -8,17 +8,24 @@ each_metrics_lines = 100
 
 model_path_pattern = re.compile(r"/(.+?)[-_]([0-9]+[Bb])-((?:stage|phase|mid)[0-9]+)-(?:(ingredient[0-9]+)-)?(?:step|iter)([0-9]+)(?:-tokens[0-9]+B)?(?:[^_]*)_([^_/]+_[^_/]+)_([^./]+)")
 
-step_multipliers = {
+offset_multipliers = {
     "OLMo-2": {
-        "7B": 4096,
+        "7B": {
+            "stage1": (0, 4096 * 1024),
+            "stage2": {
+                "ingredient1": (4096 * 1024 * 928646, 4096 * 1024),
+                "ingredient2": (4096 * 1024 * (928646 + 11931), 4096 * 1024),
+                "ingredient3": (4096 * 1024 * (928646 + 11931 * 2), 4096 * 1024),
+            },
+        }
     },
     "llm-jp-4": {
         "8b": {
-            "phase1": 2048,
-            "phase2": 8192,
-            "mid1": 8192,
-            "mid2": 8192,
-            "mid3": 8192,
+            "phase1": (0, 4096 * 512),
+            "phase2": (4096 * 512 * 3000000, 4096 * 2048),
+            "mid1": (4096 * (512 * 3000000 + 2048 * 500000), 4096 * 2048),
+            "mid2": (4096 * (512 * 3000000 + 2048 * (500000 + 100000)), 16384 * 512),
+            "mid3": (4096 * (512 * 3000000 + 2048 * (500000 + 100000)) + 16384 * 512 * 25000, 65536 * 128),
         },
     },
 }
@@ -176,7 +183,7 @@ def main():
         ["TOTAL F1", total_stats, "f1"],
     ]:
         def _sort_steps(key):
-            v0 = step_multipliers.get(key[0])
+            v0 = offset_multipliers.get(key[0])
             if not isinstance(v0, dict):
                 return key
             v1 = v0.get(key[1])
@@ -184,7 +191,7 @@ def main():
                 return key
             v2 = v1.get(key[2])
             if v2 is not None:
-                key2 = list(step_multipliers[key[0]][key[1]].keys()).index(key[2])
+                key2 = list(v1.keys()).index(key[2])
                 if isinstance(v2, dict) and key[3] in v2:
                     key3 = list(v2.keys()).index(key[3])
                 else:
@@ -195,21 +202,16 @@ def main():
         labels = sorted(stats[keys[0]][metrics].keys())
         print(title, "", f"{treebank}_{template}", sep="\t")
         print("model", "size", "stage", "ingredient", "step", "tokens", *labels, sep="\t")
-        prev_stage_ingredient = (None, None)
-        tokens = 0
-        tokens_offset = 0
         for key in keys:
             stat = stats[key]
             model_name, model_size, stage, ingredient, step = key
-            if prev_stage_ingredient != (stage, ingredient):
-                prev_stage_ingredient = (stage, ingredient)
-                tokens_offset = tokens
-            multiplier = step_multipliers
+            offset_multiplier = offset_multipliers
             for k in [model_name, model_size, stage, ingredient]:
-                multiplier = multiplier[k]
-                if isinstance(multiplier, int):
+                offset_multiplier = offset_multiplier[k]
+                if not isinstance(offset_multiplier, dict):
                     break
-            tokens = tokens_offset + step * multiplier
+            offset, multiplier = offset_multiplier
+            tokens = offset + step * multiplier
             print(model_name, model_size, stage, ingredient, step, tokens, *(stat[metrics].get(label, 0.) for label in labels), sep="\t")
         print("\n" * (each_metrics_lines - len(keys) - 2), end="")
 

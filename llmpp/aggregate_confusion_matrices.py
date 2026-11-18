@@ -175,7 +175,17 @@ def main():
         ["TOTAL Precision", total_stats, "precision"],
         ["TOTAL F1", total_stats, "f1"],
     ]:
-        keys = sorted(stats.keys())
+        def _sort_steps(key):
+            v2 = step_multipliers.get(key[0], {}).get(key[1], {}).get(key[2])
+            if v2 is not None:
+                key2 = list(step_multipliers[key[0]][key[1]].keys()).index(key[2])
+                if isinstance(v2, dict) and key[3] in v2:
+                    key3 = list(v2.keys()).index(key[3])
+                else:
+                    key3 = key[3]
+                return (key[0], key[1], key2, key3, key[4])
+            return key
+        keys = sorted(stats.keys(), key=_sort_steps)
         labels = sorted(stats[keys[0]][metrics].keys())
         print(title, "", f"{treebank}_{template}", sep="\t")
         print("model", "size", "stage", "ingredient", "step", "tokens", *labels, sep="\t")

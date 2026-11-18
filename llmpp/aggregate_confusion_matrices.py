@@ -176,7 +176,13 @@ def main():
         ["TOTAL F1", total_stats, "f1"],
     ]:
         def _sort_steps(key):
-            v2 = step_multipliers.get(key[0], {}).get(key[1], {}).get(key[2])
+            v0 = step_multipliers.get(key[0])
+            if not isinstance(v0, dict):
+                return key
+            v1 = v0.get(key[1])
+            if not isinstance(v1, dict):
+                return key
+            v2 = v1.get(key[2])
             if v2 is not None:
                 key2 = list(step_multipliers[key[0]][key[1]].keys()).index(key[2])
                 if isinstance(v2, dict) and key[3] in v2:
